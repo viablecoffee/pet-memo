@@ -1,0 +1,94 @@
+.music-player {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  width: 200px;
+  height: 42px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+}
+
+.player-btn {
+  color: var(--color-text-muted);
+  transition: color var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.player-btn:hover { color: var(--color-accent); }
+
+.player-play {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--color-card-border);
+  background: rgba(200,169,110,0.1);
+}
+
+.player-play:hover {
+  background: rgba(200,169,110,0.2);
+}
+
+/* Animated dots */
+.player-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+@keyframes dot-bounce {
+  0%, 100% { transform: scaleY(1); opacity: 0.4; }
+  50%       { transform: scaleY(1.8); opacity: 1; }
+}
+
+.player-dot {
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  opacity: 0.4;
+}
+
+.player-dot--active {
+  animation: dot-bounce 0.8s ease-in-out infinite;
+}
+
+/* Progress */
+.player-progress {
+  flex: 1;
+  height: 3px;
+  background: rgba(200,169,110,0.2);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+}
+
+.player-progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 2px;
+  transition: width 0.2s;
+}
+
+.player-progress-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 6px rgba(232, 201, 122, 0.6);
+  transition: left 0.2s;
+}
+
+.player-more {
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--color-text-dim);
+}

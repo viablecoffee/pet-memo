@@ -18,5 +18,5 @@ We generated a conceptual design as the input for the AI to work out a basic wor
 
 The demo worked without presenting any error message. So continue generating code to implement moon and star scenes. The scene looked pretty good!
 
-
+We continue generate code to implement the basic features in the conceptual design: UI interface, timeline, memory card, music player, top bar, add memory modal. Now we can see them from the home page. Some features are interactive (add a memory) some are not.
 

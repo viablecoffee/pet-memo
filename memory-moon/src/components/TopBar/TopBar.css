@@ -1,0 +1,61 @@
+.topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.topbar__center {
+  flex: 1;
+  text-align: center;
+  pointer-events: none;
+}
+
+.topbar__title {
+  font-family: var(--font-title);
+  font-size: 26px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-text-primary);
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 30px rgba(200, 169, 110, 0.5);
+  line-height: 1.2;
+}
+
+.topbar__subtitle {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.12em;
+  margin-top: 2px;
+}
+
+.topbar__actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.topbar__btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-card-bg);
+  backdrop-filter: var(--blur-glass);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.topbar__btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  box-shadow: 0 0 12px rgba(232, 201, 122, 0.2);
+}
