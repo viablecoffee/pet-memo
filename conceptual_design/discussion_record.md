@@ -20,4 +20,18 @@ The demo worked without presenting any error message. So continue generating cod
 
 We continue generate code to implement the basic features in the conceptual design: UI interface, timeline, memory card, music player, top bar, add memory modal. Now we can see them from the home page. Some features are interactive (add a memory) some are not.
 
+We are building a web-based application called Pet Memory Space, designed to help users record and cherish moments with their pets in a warm and meaningful way. The experience combines memory visualization, emotional storytelling, and AI companionship. 
+
+1. Onboarding: When users first enter the website, they should immediately feel a warm and comforting atmosphere. 
+· warm background color · soft animation · welcome message
+
+2. Pet Profile Setup: The system will guide users to create a pet profile. (Name, Gender, Birthday, Breed, Weight, Favorite Things, Upload a photo of the dog)
+
+3. Memory Space: The core feature of the website. The user can create a memory space for their pet. A planet represents the pet’s life journey. Across the planet is a chain of stars, which forms a timeline of memories. Each star represents a memory. When users click on a star, they can see the memory in detail.
+Interaction: when users click on a star, it will pop up a bubble with the memory details. Bubble contains: Date, Photo, Memory description written by the owner. 
+
+4. AI Companion: Users can interact with an AI companion designed to simulate the presence of their pet. 
+
+5. Pet Profile Page: Name, Gender, Birthday, Breed, Weight, Favorite Things, Photo, Total Memories.
+
 We need a navigation bar at the top, and it should only appear when the cursor is near the top of the screen.
