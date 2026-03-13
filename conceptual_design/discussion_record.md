@@ -39,3 +39,5 @@ We need a navigation bar at the top, and it should only appear when the cursor i
 We should allow uploading photos when adding new memory.
 
 We should make memory editable.
+
+We should make a blank page for the AI companion for further development.

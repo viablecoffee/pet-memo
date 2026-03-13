@@ -6,11 +6,12 @@ interface TopBarProps {
   onMusic?: () => void;
   onSettings?: () => void;
   onPetProfile?: () => void;
+  onAI?: () => void;
   isVisible: boolean;
-  activeView?: 'space' | 'profile';
+  activeView?: 'space' | 'profile' | 'ai';
 }
 
-const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetProfile, isVisible, activeView = 'space' }) => {
+const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetProfile, onAI, isVisible, activeView = 'space' }) => {
   return (
     <header className={`topbar ${isVisible ? 'topbar--visible' : ''}`}>
       <div className="topbar__left">
@@ -29,7 +30,12 @@ const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetPro
         >
           Memory Space
         </button>
-        <a href="#" className="topbar__nav-link">AI Companion</a>
+        <button 
+          className={`topbar__nav-link ${activeView === 'ai' ? 'topbar__nav-link--active' : ''}`}
+          onClick={onAI}
+        >
+          AI Companion
+        </button>
         <button 
           className={`topbar__nav-link ${activeView === 'profile' ? 'topbar__nav-link--active' : ''}`}
           onClick={onPetProfile}
