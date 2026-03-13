@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import StarField from './components/StarField/StarField';
 import MoonScene from './components/MoonScene/MoonScene';
@@ -12,8 +12,24 @@ import { useStore } from './store/useStore';
 const App: React.FC = () => {
     const { pet, memories, selectedMemoryId, selectMemory } = useStore();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isTopBarVisible, setIsTopBarVisible] = useState(false);
 
     const selectedMemory = memories.find(m => m.id === selectedMemoryId) ?? null;
+
+    // Mouse proximity detector for TopBar
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            // Show bar if mouse is within 60px of top
+            if (e.clientY < 60) {
+                setIsTopBarVisible(true);
+            } else {
+                setIsTopBarVisible(false);
+            }
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
 
     return (
         <div className="app">
@@ -25,7 +41,7 @@ const App: React.FC = () => {
 
             {/* Layer 2: UI overlay */}
             <div className="app-ui">
-                <TopBar />
+                <TopBar isVisible={isTopBarVisible} />
                 <Timeline
                     petName={pet.name}
                     memories={memories}
