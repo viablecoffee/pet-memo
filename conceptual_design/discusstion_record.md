@@ -10,4 +10,7 @@ No no no, when it opens, it should be a sphere like Earth, except the sphere is 
 
 When the user clicks on a specific star, that star reveals a story from the dog’s life, displayed in the form of a bubble. On the left side, there should be a timeline, and on the right side, there should be photos and some text recorded by the owner.
 
-We like this color but also would like to keep the general layout of the initial design (layout + this blue planet).
+We like this color but also would like to keep the general layout of the initial design (layout + this planet).
+
+This planet should make people feel warm and does not cause trauma.
+
