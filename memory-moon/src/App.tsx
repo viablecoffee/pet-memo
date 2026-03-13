@@ -34,7 +34,7 @@ const App: React.FC = () => {
     }, [showPetProfile]);
 
     return (
-        <div className="app">
+        <div className={`app ${showPetProfile ? 'app--scrolling' : ''}`}>
             <StarField />
             <MoonScene />
             <div className="app-ui">

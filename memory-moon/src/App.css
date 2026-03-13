@@ -5,6 +5,10 @@
     overflow: hidden;
 }
 
+.app.app--scrolling {
+    overflow-y: auto;
+}
+
 .app-ui {
     position: absolute;
     inset: 0;
