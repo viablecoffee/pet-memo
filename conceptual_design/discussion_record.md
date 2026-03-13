@@ -20,3 +20,4 @@ The demo worked without presenting any error message. So continue generating cod
 
 We continue generate code to implement the basic features in the conceptual design: UI interface, timeline, memory card, music player, top bar, add memory modal. Now we can see them from the home page. Some features are interactive (add a memory) some are not.
 
+We need a navigation bar at the top, and it should only appear when the cursor is near the top of the screen.
