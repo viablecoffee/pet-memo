@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './MemoryCard.css';
 import { useStore } from '../../store/useStore';
 import type { Memory } from '../../types';
+import EditMemoryModal from '../EditMemoryModal/EditMemoryModal';
 
 interface MemoryCardProps {
   memory: Memory | null;
@@ -16,18 +17,31 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
   const { deleteMemory } = useStore();
   const cardRef = useRef<HTMLDivElement>(null);
   const prevIdRef = useRef<string | null>(null);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (!memory || !cardRef.current) return;
     if (prevIdRef.current === memory.id) return;
     prevIdRef.current = memory.id;
+    setPhotoIndex(0);
+    setIsEditing(false);
 
     const el = cardRef.current;
     el.style.animation = 'none';
-    // Trigger reflow
     void el.offsetWidth;
     el.style.animation = '';
   }, [memory?.id]);
+
+  const goToPrev = () => {
+    if (!memory) return;
+    setPhotoIndex(i => (i > 0 ? i - 1 : memory.photos.length - 1));
+  };
+
+  const goToNext = () => {
+    if (!memory) return;
+    setPhotoIndex(i => (i < memory.photos.length - 1 ? i + 1 : 0));
+  };
 
   if (!memory) {
     return (
@@ -49,7 +63,20 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
       {/* Photo */}
       <div className="memory-card__photo-frame">
         {memory.photos.length > 0 ? (
-          <img src={memory.photos[0]} alt={memory.title} className="memory-card__photo" />
+          <>
+            <img src={memory.photos[photoIndex]} alt={memory.title} className="memory-card__photo" />
+            {memory.photos.length > 1 && (
+              <>
+                <button className="photo-nav photo-nav--prev" onClick={goToPrev}>←</button>
+                <button className="photo-nav photo-nav--next" onClick={goToNext}>→</button>
+                <div className="photo-indicator">
+                  {memory.photos.map((_, i) => (
+                    <span key={i} className={`photo-dot ${i === photoIndex ? 'active' : ''}`} />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
         ) : (
           <div className="memory-card__photo-placeholder">
             <span>{memory.emoji || '🐾'}</span>
@@ -69,6 +96,13 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
         <div className="memory-card__actions">
           <button 
             className="action-btn" 
+            onClick={() => setIsEditing(true)}
+            aria-label="Edit memory"
+          >
+            ✏️
+          </button>
+          <button 
+            className="action-btn" 
             onClick={() => deleteMemory(memory.id)}
             aria-label="Delete memory"
           >
@@ -76,6 +110,12 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
           </button>
         </div>
       </div>
+
+      <EditMemoryModal
+        memory={memory}
+        isOpen={isEditing}
+        onClose={() => setIsEditing(false)}
+      />
     </div>
   );
 };

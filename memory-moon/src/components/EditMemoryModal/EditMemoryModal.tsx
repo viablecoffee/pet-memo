@@ -1,21 +1,32 @@
-import React, { useState, useRef } from 'react';
-import './AddMemoryModal.css';
+import React, { useState, useRef, useEffect } from 'react';
+import './EditMemoryModal.css';
 import { useStore } from '../../store/useStore';
 import type { Memory } from '../../types';
 
-interface AddMemoryModalProps {
+interface EditMemoryModalProps {
+  memory: Memory;
   isOpen: boolean;
   onClose: () => void;
 }
 
-const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
-  const { addMemory, pet } = useStore();
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [icon, setIcon] = useState('🐾');
-  const [photos, setPhotos] = useState<string[]>([]);
+const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClose }) => {
+  const { updateMemory } = useStore();
+  const [date, setDate] = useState(memory.date);
+  const [title, setTitle] = useState(memory.title);
+  const [description, setDescription] = useState(memory.description);
+  const [icon, setIcon] = useState(memory.emoji || '🐾');
+  const [photos, setPhotos] = useState<string[]>(memory.photos);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setDate(memory.date);
+      setTitle(memory.title);
+      setDescription(memory.description);
+      setIcon(memory.emoji || '🐾');
+      setPhotos(memory.photos);
+    }
+  }, [isOpen, memory]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -42,9 +53,8 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
     e.preventDefault();
     if (!title || !description) return;
 
-    const newMemory: Memory = {
-      id: crypto.randomUUID(),
-      petId: pet.id,
+    const updatedMemory: Memory = {
+      ...memory,
       date,
       title,
       description,
@@ -52,18 +62,15 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
       emoji: icon,
     };
 
-    addMemory(newMemory);
+    updateMemory(updatedMemory);
     onClose();
-    setTitle('');
-    setDescription('');
-    setPhotos([]);
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content glass-card" onClick={e => e.stopPropagation()}>
         <header className="modal-header">
-          <h2 className="modal-title">New Memory</h2>
+          <h2 className="modal-title">Edit Memory</h2>
           <button className="modal-close" onClick={onClose}>&times;</button>
         </header>
 
@@ -154,7 +161,7 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           <button type="submit" className="submit-btn">
-            Create Star Memory
+            Save Changes
           </button>
         </form>
       </div>
@@ -162,4 +169,4 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
   );
 };
 
-export default AddMemoryModal;
+export default EditMemoryModal;

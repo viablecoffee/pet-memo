@@ -49,6 +49,7 @@
 
 /* Photo */
 .memory-card__photo-frame {
+  position: relative;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid var(--color-card-border);
@@ -71,6 +72,62 @@
   justify-content: center;
   font-size: 48px;
   background: linear-gradient(135deg, rgba(200,169,110,0.08), rgba(80,40,120,0.12));
+}
+
+/* Photo navigation */
+.photo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.memory-card__photo-frame:hover .photo-nav {
+  opacity: 1;
+}
+
+.photo-nav--prev {
+  left: 8px;
+}
+
+.photo-nav--next {
+  right: 8px;
+}
+
+.photo-nav:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.photo-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+}
+
+.photo-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.photo-dot.active {
+  background: white;
 }
 
 /* Description */
