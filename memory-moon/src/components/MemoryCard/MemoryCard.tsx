@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './MemoryCard.css';
 import { useStore } from '../../store/useStore';
 import type { Memory } from '../../types';
+import EditMemoryModal from '../EditMemoryModal/EditMemoryModal';
 
 interface MemoryCardProps {
   memory: Memory | null;
@@ -17,12 +18,14 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const prevIdRef = useRef<string | null>(null);
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (!memory || !cardRef.current) return;
     if (prevIdRef.current === memory.id) return;
     prevIdRef.current = memory.id;
     setPhotoIndex(0);
+    setIsEditing(false);
 
     const el = cardRef.current;
     el.style.animation = 'none';
@@ -93,6 +96,13 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
         <div className="memory-card__actions">
           <button 
             className="action-btn" 
+            onClick={() => setIsEditing(true)}
+            aria-label="Edit memory"
+          >
+            ✏️
+          </button>
+          <button 
+            className="action-btn" 
             onClick={() => deleteMemory(memory.id)}
             aria-label="Delete memory"
           >
@@ -100,6 +110,12 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
           </button>
         </div>
       </div>
+
+      <EditMemoryModal
+        memory={memory}
+        isOpen={isEditing}
+        onClose={() => setIsEditing(false)}
+      />
     </div>
   );
 };
