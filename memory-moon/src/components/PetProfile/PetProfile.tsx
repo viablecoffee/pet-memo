@@ -2,30 +2,11 @@ import React from 'react';
 import './PetProfile.css';
 import { useStore } from '../../store/useStore';
 
-interface PetProfileProps {
-  onClose?: () => void;
-}
-
-const PetProfile: React.FC<PetProfileProps> = ({ onClose }) => {
+const PetProfile: React.FC = () => {
   const { pet, memories } = useStore();
 
   return (
     <div className="pet-profile">
-      <header className="pet-profile-header">
-        <button className="pet-profile-back-btn" onClick={onClose}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <h1 className="pet-profile-title">Pet Profile</h1>
-        <button className="pet-profile-settings-btn" aria-label="Settings">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" />
-          </svg>
-        </button>
-      </header>
-
       <main className="pet-profile-main">
         <section className="pet-identity">
           <div className="pet-avatar-wrapper">

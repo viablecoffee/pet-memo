@@ -13,39 +13,40 @@ import { useStore } from './store/useStore';
 const App: React.FC = () => {
     const { pet, memories, selectedMemoryId, selectMemory } = useStore();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isTopBarVisible, setIsTopBarVisible] = useState(false);
     const [showPetProfile, setShowPetProfile] = useState(false);
+    const [isTopBarNear, setIsTopBarNear] = useState(false);
 
     const selectedMemory = memories.find(m => m.id === selectedMemoryId) ?? null;
 
     // Mouse proximity detector for TopBar
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
-            // Show bar if mouse is within 60px of top
+            if (showPetProfile) return;
             if (e.clientY < 60) {
-                setIsTopBarVisible(true);
+                setIsTopBarNear(true);
             } else {
-                setIsTopBarVisible(false);
+                setIsTopBarNear(false);
             }
         };
 
         window.addEventListener('mousemove', handleMouseMove);
         return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, []);
+    }, [showPetProfile]);
 
     return (
         <div className="app">
-            {showPetProfile ? (
-                <PetProfile onClose={() => setShowPetProfile(false)} />
-            ) : (
-                <>
-                    <StarField />
-                    <MoonScene />
-                    <div className="app-ui">
-                        <TopBar 
-                            isVisible={isTopBarVisible} 
-                            onPetProfile={() => setShowPetProfile(true)}
-                        />
+            <StarField />
+            <MoonScene />
+            <div className="app-ui">
+                <TopBar 
+                    isVisible={showPetProfile || isTopBarNear} 
+                    onPetProfile={() => setShowPetProfile(!showPetProfile)}
+                    activeView={showPetProfile ? 'profile' : 'space'}
+                />
+                {showPetProfile ? (
+                    <PetProfile />
+                ) : (
+                    <>
                         <Timeline
                             petName={pet.name}
                             memories={memories}
@@ -55,9 +56,9 @@ const App: React.FC = () => {
                         />
                         <MemoryCard memory={selectedMemory} />
                         <MusicPlayer />
-                    </div>
-                </>
-            )}
+                    </>
+                )}
+            </div>
 
             <AddMemoryModal
                 isOpen={isModalOpen}
