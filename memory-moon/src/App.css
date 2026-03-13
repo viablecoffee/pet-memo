@@ -1,0 +1,18 @@
+.app {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.app-ui {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* Allow clicks on interactive UI elements */
+.app-ui>* {
+    pointer-events: auto;
+}
