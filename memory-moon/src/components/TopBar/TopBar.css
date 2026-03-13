@@ -65,6 +65,9 @@
   transition: all var(--transition);
   padding: 6px 4px;
   border-bottom: 2px solid transparent;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .topbar__nav-link:hover {

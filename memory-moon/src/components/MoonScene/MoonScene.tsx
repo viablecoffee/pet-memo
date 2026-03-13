@@ -45,12 +45,12 @@ const OrbitRing2: React.FC = () => {
 // Star dots around moon - each memory has a corresponding star
 const MemoryStars: React.FC = () => {
   const { memories, selectedMemoryId, selectMemory } = useStore();
-  
+
   const handleClick = (id: string) => {
     selectMemory(id);
   };
 
-  const sortedMemories = [...memories].sort((a, b) => 
+  const sortedMemories = [...memories].sort((a, b) =>
     new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
@@ -61,7 +61,7 @@ const MemoryStars: React.FC = () => {
     const y = (progress - 0.5) * 1.6;
     const xOffset = Math.sin(angle * 2) * 0.3;
     const zOffset = Math.cos(angle * 3) * 0.2;
-    
+
     return [
       Math.cos(angle) * radius + xOffset,
       y + zOffset,
@@ -80,7 +80,6 @@ const MemoryStars: React.FC = () => {
             key={memory.id}
             position={pos}
             isSelected={isSelected}
-            emoji={memory.emoji || '⭐'}
             onClick={() => handleClick(memory.id)}
           />
         );
@@ -92,9 +91,8 @@ const MemoryStars: React.FC = () => {
 const MemoryStar: React.FC<{
   position: [number, number, number];
   isSelected: boolean;
-  emoji: string;
   onClick: () => void;
-}> = ({ position, isSelected, emoji, onClick }) => {
+}> = ({ position, isSelected, onClick }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = React.useState(false);
@@ -120,7 +118,7 @@ const MemoryStar: React.FC<{
     const hoverScale = hovered ? 1.3 : 1;
     const pulse = Math.sin(t * 2) * 0.1 + 1;
     const scale = baseScale * hoverScale * (isSelected ? pulse : 1);
-    
+
     if (meshRef.current) {
       meshRef.current.scale.setScalar(scale * 0.04);
     }
@@ -183,7 +181,7 @@ const MoonSystem: React.FC = () => {
 
 const MoonScene: React.FC = () => {
   const { selectMemory } = useStore();
-  
+
   return (
     <div className="moon-scene">
       <Canvas
@@ -223,13 +221,13 @@ const MoonScene: React.FC = () => {
       <div className="birds-overlay">
         <svg viewBox="0 0 800 400" className="birds-svg">
           <g className="bird bird-1">
-            <path d="M0,10 Q5,-5 10,10 Q15,-5 20,10" fill="none" stroke="#ffd070" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M0,10 Q5,-5 10,10 Q15,-5 20,10" fill="none" stroke="#ffd070" strokeWidth="1.5" strokeLinecap="round" />
           </g>
           <g className="bird bird-2" transform="translate(30,15) scale(0.8)">
-            <path d="M0,10 Q5,-5 10,10 Q15,-5 20,10" fill="none" stroke="#ffd070" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M0,10 Q5,-5 10,10 Q15,-5 20,10" fill="none" stroke="#ffd070" strokeWidth="1.5" strokeLinecap="round" />
           </g>
           <g className="bird bird-3" transform="translate(60,5) scale(0.65)">
-            <path d="M0,10 Q5,-5 10,10 Q15,-5 20,10" fill="none" stroke="#ffd070" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M0,10 Q5,-5 10,10 Q15,-5 20,10" fill="none" stroke="#ffd070" strokeWidth="1.5" strokeLinecap="round" />
           </g>
         </svg>
       </div>
