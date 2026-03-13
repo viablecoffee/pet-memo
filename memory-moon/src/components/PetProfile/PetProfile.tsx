@@ -30,10 +30,10 @@ const PetProfile: React.FC<PetProfileProps> = ({ onClose }) => {
         <section className="pet-identity">
           <div className="pet-avatar-wrapper">
             <div className="pet-avatar-glow"></div>
-            <img 
+            <img
               src={pet.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${pet.name}`}
-              alt={pet.name} 
-              className="pet-avatar" 
+              alt={pet.name}
+              className="pet-avatar"
             />
           </div>
           <h2 className="pet-name">{pet.name} 🐾</h2>
@@ -84,7 +84,7 @@ const PetProfile: React.FC<PetProfileProps> = ({ onClose }) => {
                 </div>
               </div>
             ))}
-            <button className="add-memory-btn">
+            <button className="pet-profile-add-memory-btn">
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 5v14M5 12h14" />
               </svg>
