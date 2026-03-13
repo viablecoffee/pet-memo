@@ -1,0 +1,35 @@
+.moon-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.moon-scene canvas {
+  animation: moon-glow-pulse 4s ease-in-out infinite;
+}
+
+/* Birds overlay */
+.birds-overlay {
+  position: absolute;
+  bottom: 18%;
+  left: 30%;
+  pointer-events: none;
+}
+
+.birds-svg {
+  width: 200px;
+  height: 100px;
+  overflow: visible;
+}
+
+.bird {
+  animation: bird-fly 8s ease-in-out infinite;
+  opacity: 0;
+}
+
+.bird-1 { animation-delay: 0s; }
+.bird-2 { animation-delay: 0.5s; }
+.bird-3 { animation-delay: 1s; }

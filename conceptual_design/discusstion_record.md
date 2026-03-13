@@ -14,3 +14,9 @@ We like this color but also would like to keep the general layout of the initial
 
 This planet should make people feel warm and does not cause trauma.
 
+We generated a conceptual design as the input for the AI to work out a basic working structure. The demo is compilable and runnable with npm run tauri dev.
+
+The demo worked without presenting any error message. So continue generating code to implement moon and star scenes. The scene looked pretty good!
+
+
+
