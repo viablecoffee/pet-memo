@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './AddMemoryModal.css';
 import { useStore } from '../../store/useStore';
 import type { Memory } from '../../types';
@@ -14,6 +14,27 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [icon, setIcon] = useState('🐾');
+  const [photos, setPhotos] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setPhotos(prev => [...prev, event.target!.result as string]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos(prev => prev.filter((_, i) => i !== index));
+  };
 
   if (!isOpen) return null;
 
@@ -27,15 +48,15 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
       date,
       title,
       description,
-      photos: [],
+      photos,
       emoji: icon,
     };
 
     addMemory(newMemory);
     onClose();
-    // Reset fields
     setTitle('');
     setDescription('');
+    setPhotos([]);
   };
 
   return (
@@ -81,6 +102,43 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
                   {emoji}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Photos</label>
+            <div className="photo-upload">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileSelect}
+                style={{ display: 'none' }}
+              />
+              <button
+                type="button"
+                className="photo-add-btn"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                + Add Photos
+              </button>
+              {photos.length > 0 && (
+                <div className="photo-preview-grid">
+                  {photos.map((photo, index) => (
+                    <div key={index} className="photo-preview">
+                      <img src={photo} alt="" />
+                      <button
+                        type="button"
+                        className="photo-remove"
+                        onClick={() => removePhoto(index)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

@@ -35,3 +35,5 @@ Interaction: when users click on a star, it will pop up a bubble with the memory
 5. Pet Profile Page: Name, Gender, Birthday, Breed, Weight, Favorite Things, Photo, Total Memories.
 
 We need a navigation bar at the top, and it should only appear when the cursor is near the top of the screen.
+
+We should allow uploading photos when adding new memory.

@@ -80,7 +80,6 @@ const MemoryStars: React.FC = () => {
             key={memory.id}
             position={pos}
             isSelected={isSelected}
-            emoji={memory.emoji || '⭐'}
             onClick={() => handleClick(memory.id)}
           />
         );
@@ -92,9 +91,8 @@ const MemoryStars: React.FC = () => {
 const MemoryStar: React.FC<{
   position: [number, number, number];
   isSelected: boolean;
-  emoji: string;
   onClick: () => void;
-}> = ({ position, isSelected, emoji, onClick }) => {
+}> = ({ position, isSelected, onClick }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = React.useState(false);
