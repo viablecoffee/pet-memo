@@ -6,6 +6,11 @@ const DEMO_PET: Pet = {
   id: '1',
   name: 'Milo',
   species: 'dog',
+  gender: 'male',
+  breed: 'Golden Retriever',
+  birthDate: '2018-06-12',
+  color: 'Golden',
+  weight: '25 kg',
 };
 
 const DEMO_MEMORIES: Memory[] = [
@@ -28,6 +33,7 @@ interface AppState {
   addMemory: (m: Memory) => void;
   updateMemory: (m: Memory) => void;
   deleteMemory: (id: string) => void;
+  updatePet: (p: Pet) => void;
   setPlaying: (v: boolean) => void;
   setVolume: (v: number) => void;
 }
@@ -43,6 +49,7 @@ export const useStore = create<AppState>((set) => ({
   addMemory: (m) => set(s => ({ memories: [...s.memories, m] })),
   updateMemory: (m) => set(s => ({ memories: s.memories.map(x => x.id === m.id ? m : x) })),
   deleteMemory: (id) => set(s => ({ memories: s.memories.filter(x => x.id !== id) })),
+  updatePet: (p) => set({ pet: p }),
   setPlaying: (v) => set({ isPlaying: v }),
   setVolume: (v) => set({ volume: v }),
 }));

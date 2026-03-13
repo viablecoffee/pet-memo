@@ -16,4 +16,8 @@ export interface Pet {
   birthDate?: string;
   passDate?: string;
   avatarUrl?: string;
+  gender?: string;
+  breed?: string;
+  weight?: string;
+  color?: string;
 }
