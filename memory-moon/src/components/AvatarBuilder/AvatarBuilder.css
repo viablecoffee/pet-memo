@@ -3,7 +3,8 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background: rgba(20, 20, 35, 0.4); /* Subtler background to match PetProfile theme */
+  background: rgba(20, 20, 35, 0.4);
+  /* Subtler background to match PetProfile theme */
   border-radius: 24px;
   overflow: hidden;
   animation: fadeIn 0.3s ease;
@@ -22,6 +23,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   background: linear-gradient(135deg, #fff, #b3c0d1);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -60,7 +62,7 @@
 .avatar-preview-canvas {
   width: 250px;
   height: 250px;
-  background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -72,7 +74,7 @@
 .avatar-preview-svg {
   width: 200px;
   height: 200px;
-  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.3));
 }
 
 .save-avatar-btn {
@@ -111,9 +113,13 @@
   padding: 16px;
   gap: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
+  /* Firefox */
 }
-.category-tabs::-webkit-scrollbar { display: none; }
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
+}
 
 .category-tab-btn {
   background: rgba(255, 255, 255, 0.05);
@@ -187,7 +193,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.2);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;
   transition: transform 0.2s, border-color 0.2s;
 }
@@ -199,12 +205,17 @@
 .color-btn.selected {
   border-color: white;
   transform: scale(1.1);
-  box-shadow: 0 0 15px rgba(255,255,255,0.3);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Responsive adjustments */
@@ -212,6 +223,7 @@
   .avatar-builder-content {
     flex-direction: column;
   }
+
   .avatar-preview-section {
     flex: none;
     height: 40%;

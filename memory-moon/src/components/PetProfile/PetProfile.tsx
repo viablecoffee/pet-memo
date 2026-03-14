@@ -9,13 +9,11 @@ const PetProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Pet>(pet);
   const [isGenderOpen, setIsGenderOpen] = useState(false);
-  HEAD
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
 
   const [isAvatarBuilderOpen, setIsAvatarBuilderOpen] = useState(false);
-  33cea74(Refactor avatar builder into pet profile flow)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const itemsPerPage = 3;
   const totalPages = Math.ceil(memories.length / itemsPerPage);
