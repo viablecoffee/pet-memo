@@ -34,8 +34,12 @@ const App: React.FC = () => {
     const rightPanelRef = useRef<HTMLDivElement>(null);
 
     const handleSelectMemory = (id: string) => {
-        selectMemory(id);
-        setShowRightPanel(true);
+        if (selectedMemoryId === id && showRightPanel) {
+            setShowRightPanel(false);
+        } else {
+            selectMemory(id);
+            setShowRightPanel(true);
+        }
     };
 
     // Smart click-outside: collapse panels when clicking outside
