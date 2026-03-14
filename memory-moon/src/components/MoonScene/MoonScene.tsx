@@ -54,7 +54,7 @@ const MoonMesh: React.FC = () => {
     blue: '/assets/images/planet_blue.png'
   }, (tex) => {
     if (Array.isArray(tex)) return;
-    
+
     // Common settings
     const configureTexture = (t: THREE.Texture) => {
       t.anisotropy = 16;
@@ -128,11 +128,12 @@ const OrbitRing2: React.FC = () => {
 };
 
 // Star dots around moon - each memory has a corresponding star
-const MemoryStars: React.FC = () => {
+const MemoryStars: React.FC<{ onStarClick?: (id: string) => void }> = ({ onStarClick }) => {
   const { memories, selectedMemoryId, selectMemory } = useStore();
 
   const handleClick = (id: string) => {
     selectMemory(id);
+    onStarClick?.(id);
   };
 
   const sortedMemories = [...memories].sort((a, b) =>
@@ -154,6 +155,10 @@ const MemoryStars: React.FC = () => {
     ];
   };
 
+  const countWords = (text: string) => {
+    return text.trim() ? text.trim().split(/\s+/).length : 0;
+  };
+
   return (
     <>
       {sortedMemories.map((memory, i) => {
@@ -167,7 +172,7 @@ const MemoryStars: React.FC = () => {
             isSelected={isSelected}
             onClick={() => handleClick(memory.id)}
             photoCount={memory.photos?.length || 0}
-            descriptionLength={memory.description?.length || 0}
+            descriptionLength={countWords(memory.description || '')}
           />
         );
       })}
@@ -187,9 +192,9 @@ const MemoryStar: React.FC<{
   const [hovered, setHovered] = React.useState(false);
 
   const maxPhotos = 5;
-  const maxDescLength = 200;
+  const maxDescWords = 200;
   const photoScale = 1 + Math.min(photoCount, maxPhotos) * 0.1;
-  const descScale = 1 + Math.min(descriptionLength, maxDescLength) * 0.003;
+  const descScale = 1 + Math.min(descriptionLength, maxDescWords) * 0.003;
 
   const glowTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
@@ -254,7 +259,92 @@ const MemoryStar: React.FC<{
   );
 };
 
-const MoonSystem: React.FC = () => {
+interface PlanetProps {
+  size: number;
+  color: string;
+  orbitRadius: number;
+  orbitSpeed: number;
+  orbitTilt?: number;
+  emissive?: string;
+  emissiveIntensity?: number;
+  hasRing?: boolean;
+  ringColor?: string;
+}
+
+const Planet: React.FC<PlanetProps> = ({ size, color, orbitRadius, orbitSpeed, orbitTilt = 0, emissive, emissiveIntensity = 0, hasRing, ringColor }) => {
+  const groupRef = useRef<THREE.Group>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
+  const texture = useTexture('/assets/images/planet_blue.png');
+
+  useFrame(({ clock }) => {
+    if (groupRef.current) {
+      const t = clock.getElapsedTime() * orbitSpeed;
+      groupRef.current.position.x = Math.cos(t) * orbitRadius;
+      groupRef.current.position.z = Math.sin(t) * orbitRadius;
+      groupRef.current.position.y = Math.sin(t * 0.5 + orbitTilt) * orbitRadius * 0.3;
+    }
+    if (meshRef.current) {
+      meshRef.current.rotation.y += 0.001;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      <mesh ref={meshRef}>
+        <sphereGeometry args={[size, 32, 32]} />
+        <meshStandardMaterial
+          map={texture}
+          color={color}
+          roughness={0.8}
+          metalness={0.1}
+          emissive={emissive || color}
+          emissiveIntensity={emissiveIntensity}
+        />
+      </mesh>
+      {hasRing && (
+        <mesh rotation={[Math.PI / 2.5, 0, 0]}>
+          <ringGeometry args={[size * 1.4, size * 2.2, 32]} />
+          <meshStandardMaterial
+            color={ringColor || '#c9a86c'}
+            transparent
+            opacity={0.6}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      )}
+    </group>
+  );
+};
+
+const SolarSystem: React.FC = () => {
+  return (
+    <>
+      {/* Mercury - gray */}
+      <Planet size={0.3} color="#a0a0a0" orbitRadius={18} orbitSpeed={0.04} orbitTilt={0.5} emissiveIntensity={0.05} />
+      {/* Venus - yellowish white */}
+      <Planet size={0.4} color="#e6d9b8" orbitRadius={24} orbitSpeed={0.03} orbitTilt={1.2} emissiveIntensity={0.1} />
+
+      {/* Earth-like - the "Earth" (current planet) */}
+      <Planet size={0.5} color="#4a90c2" orbitRadius={32} orbitSpeed={0.02} orbitTilt={2.5} emissive="#2a6090" emissiveIntensity={0.15} />
+
+      {/* Mars - rusty red */}
+      <Planet size={0.35} color="#c1440e" orbitRadius={37} orbitSpeed={0.018} orbitTilt={1.9} emissiveIntensity={0.15} />
+
+      {/* Jupiter - orange-brown */}
+      <Planet size={0.9} color="#c9a86c" orbitRadius={42} orbitSpeed={0.015} orbitTilt={0.8} emissiveIntensity={0.1} hasRing ringColor="#b8956c" />
+      {/* Saturn - golden yellow */}
+      <Planet size={0.75} color="#e8d5a3" orbitRadius={52} orbitSpeed={0.01} orbitTilt={3.2} hasRing ringColor="#c9b896" />
+      {/* Uranus - cyan-blue */}
+      <Planet size={0.55} color="#7fd0d0" orbitRadius={65} orbitSpeed={0.008} orbitTilt={1.8} emissive="#4aa0a0" emissiveIntensity={0.2} />
+      {/* Neptune - deep blue */}
+      <Planet size={0.52} color="#4b70dd" orbitRadius={75} orbitSpeed={0.006} orbitTilt={2.1} emissive="#2a4090" emissiveIntensity={0.2} />
+      {/* Pluto - brownish gray */}
+      <Planet size={0.15} color="#d4a574" orbitRadius={85} orbitSpeed={0.004} orbitTilt={2.8} emissiveIntensity={0.1} />
+    </>
+  );
+};
+
+const MoonSystem: React.FC<{ onStarClick?: (id: string) => void }> = ({ onStarClick }) => {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame(({ clock }) => {
@@ -268,12 +358,17 @@ const MoonSystem: React.FC = () => {
       <MoonMesh />
       <OrbitRing />
       <OrbitRing2 />
-      <MemoryStars />
+      <MemoryStars onStarClick={onStarClick} />
+      <SolarSystem />
     </group>
   );
 };
 
-const MoonScene: React.FC = () => {
+interface MoonSceneProps {
+  onStarClick?: (id: string) => void;
+}
+
+const MoonScene: React.FC<MoonSceneProps> = ({ onStarClick }) => {
   const { theme, selectMemory } = useStore();
 
   const themeConfig = useMemo(() => {
@@ -321,7 +416,7 @@ const MoonScene: React.FC = () => {
         <pointLight position={[-4, -2, 3]} intensity={themeConfig.pointIntensity} color={themeConfig.pointColor} />
 
         <Suspense fallback={null}>
-          <MoonSystem />
+          <MoonSystem onStarClick={onStarClick} />
           <Stars
             radius={30}
             depth={20}
@@ -334,10 +429,16 @@ const MoonScene: React.FC = () => {
           <OrbitControls
             enablePan={false}
             enableZoom={true}
+            enableRotate={true}
+            enableDamping={true}
+            dampingFactor={0.05}
             minDistance={3}
             maxDistance={12}
+            minPolarAngle={0}
+            maxPolarAngle={Math.PI}
             zoomSpeed={0.5}
-            rotateSpeed={0.3}
+            rotateSpeed={0.5}
+            autoRotate={false}
             target={[0, 0, 0]}
           />
         </Suspense>

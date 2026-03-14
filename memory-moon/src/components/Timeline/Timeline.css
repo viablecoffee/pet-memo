@@ -1,3 +1,4 @@
+/* ── Timeline Panel ─────────────────────────────── */
 .timeline {
   position: absolute;
   left: 24px;
@@ -10,6 +11,43 @@
   flex-direction: column;
   gap: 12px;
   overflow: hidden;
+
+  /* Step 1: Glowing border + depth */
+  background: linear-gradient(160deg,
+      rgba(18, 10, 35, 0.92) 0%,
+      rgba(10, 6, 22, 0.96) 100%);
+  border: 1px solid rgba(200, 169, 110, 0.2);
+  box-shadow:
+    0 0 0 1px rgba(200, 169, 110, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 24px 64px rgba(0, 0, 0, 0.55);
+
+  /* Step 4: Aurora border animation */
+  animation: aurora-border 8s ease-in-out infinite;
+}
+
+@keyframes aurora-border {
+
+  0%,
+  100% {
+    border-color: rgba(200, 169, 110, 0.22);
+  }
+
+  33% {
+    border-color: rgba(160, 130, 200, 0.28);
+  }
+
+  66% {
+    border-color: rgba(110, 160, 200, 0.22);
+  }
+}
+
+.timeline-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
 }
 
 .timeline-title {
@@ -18,9 +56,33 @@
   font-weight: 400;
   color: var(--color-text-primary);
   letter-spacing: 0.02em;
-  margin-bottom: 4px;
+
+  /* Subtle text glow */
+  text-shadow: 0 0 12px rgba(200, 169, 110, 0.4);
 }
 
+.timeline-toggle-all {
+  font-size: 32px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  opacity: 0.7;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.timeline-toggle-all:hover {
+  color: var(--color-accent);
+  opacity: 1;
+  background: rgba(200, 169, 110, 0.12);
+}
+
+/* ── List + Items ───────────────────────────────── */
 .timeline-list {
   flex: 1;
   overflow-y: auto;
@@ -30,11 +92,94 @@
   gap: 2px;
 }
 
+.timeline-list-inner {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The connector line runs the full height of the list content */
+.timeline-list-inner::before {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(200, 169, 110, 0.4);
+  pointer-events: none;
+  z-index: 0;
+}
+
+
+
+
 .timeline-year-group {
   display: flex;
   flex-direction: column;
 }
 
+/* ── Year header (accordion toggle) ─────────────── */
+.timeline-year-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 30px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background var(--transition);
+  position: relative;
+}
+
+.timeline-year-header:hover {
+  background: rgba(200, 169, 110, 0.07);
+}
+
+.timeline-year-header.expanded {
+  background: rgba(200, 169, 110, 0.05);
+}
+
+.year-header__label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+.timeline-year-header.has-active .year-header__label {
+  color: var(--color-accent);
+}
+
+.year-header__chevron {
+  font-size: 20px;
+  color: var(--color-text-dim);
+  transition: transform var(--transition);
+  margin-left: auto;
+}
+
+.year-header__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  margin-left: 4px;
+}
+
+/* ── Expanded items container ────────────────────── */
+.timeline-year-items {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-left: 10px;
+  animation: fadeInUp 0.2s ease;
+}
+
+/* ── Items inside expanded year ──────────────────── */
 .timeline-item {
   position: relative;
   display: flex;
@@ -43,29 +188,19 @@
   padding: 5px 6px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background var(--transition);
+  transition: background var(--transition), transform 0.15s ease;
 }
 
 .timeline-item:hover {
   background: rgba(200, 169, 110, 0.08);
+  transform: translateX(2px);
 }
 
 .timeline-item.active {
   background: rgba(200, 169, 110, 0.14);
 }
 
-.year-label {
-  position: absolute;
-  top: -18px;
-  left: 30px;
-  font-size: 11px;
-  color: var(--color-text-muted);
-  letter-spacing: 0.05em;
-}
-
-.timeline-list .timeline-year-group:not(:first-child) .year-label {
-  top: -16px;
-}
+/* ── Dots ───────────────────────────────────────── */
 
 .timeline-dot {
   width: 22px;
@@ -78,12 +213,30 @@
   flex-shrink: 0;
   transition: all var(--transition);
   background: rgba(200, 169, 110, 0.08);
+  position: relative;
+  z-index: 1;
+  /* sit above the connector line */
 }
 
 .timeline-item.active .timeline-dot {
   background: rgba(200, 169, 110, 0.25);
   border-color: var(--color-star);
+  box-shadow:
+    0 0 8px rgba(255, 215, 0, 0.5),
+    0 0 20px rgba(255, 215, 0, 0.2);
   animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+
+  0%,
+  100% {
+    box-shadow: 0 0 6px rgba(255, 215, 0, 0.4), 0 0 18px rgba(255, 215, 0, 0.15);
+  }
+
+  50% {
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.7), 0 0 32px rgba(255, 215, 0, 0.3);
+  }
 }
 
 .dot-icon {
@@ -91,6 +244,7 @@
   line-height: 1;
 }
 
+/* ── Text ───────────────────────────────────────── */
 .item-title {
   font-size: 12.5px;
   color: var(--color-text-muted);
@@ -105,18 +259,33 @@
   color: var(--color-text-primary);
 }
 
-/* Connecting line */
-.timeline-year-group + .timeline-year-group {
+/* ── Year spacing ───────────────────────────────── */
+.timeline-year-group:first-child {
+  margin-top: 20px;
+}
+
+.timeline-year-group+.timeline-year-group {
   margin-top: 18px;
 }
 
+/* ── Scrollbar ──────────────────────────────────── */
+.timeline-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+.timeline-list::-webkit-scrollbar-thumb {
+  background: rgba(200, 169, 110, 0.25);
+  border-radius: 2px;
+}
+
+/* ── Add Memory Button ──────────────────────────── */
 .add-memory-btn {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  background: rgba(200, 169, 110, 0.1);
-  border: 1px solid var(--color-card-border);
+  background: rgba(200, 169, 110, 0.08);
+  border: 1px solid rgba(200, 169, 110, 0.25);
   border-radius: var(--radius-sm);
   color: var(--color-accent);
   font-size: 12px;
@@ -127,6 +296,7 @@
 }
 
 .add-memory-btn:hover {
-  background: rgba(200, 169, 110, 0.2);
+  background: rgba(200, 169, 110, 0.18);
   border-color: var(--color-accent);
+  box-shadow: 0 0 12px rgba(200, 169, 110, 0.2);
 }

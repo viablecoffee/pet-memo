@@ -2,24 +2,35 @@ import React, { useState, useRef, useEffect } from 'react';
 import './EditMemoryModal.css';
 import { useStore } from '../../store/useStore';
 import type { Memory } from '../../types';
+import { compressImage } from '../../utils/image';
 
 interface EditMemoryModalProps {
-  memory: Memory;
+  memory: Memory | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
 const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClose }) => {
   const { updateMemory } = useStore();
-  const [date, setDate] = useState(memory.date);
-  const [title, setTitle] = useState(memory.title);
-  const [description, setDescription] = useState(memory.description);
-  const [icon, setIcon] = useState(memory.emoji || '🐾');
-  const [photos, setPhotos] = useState<string[]>(memory.photos);
+  const [date, setDate] = useState(memory?.date || '');
+  const [title, setTitle] = useState(memory?.title || '');
+  const [description, setDescription] = useState(memory?.description || '');
+  const [icon, setIcon] = useState(memory?.emoji || '🐾');
+  const [photos, setPhotos] = useState<string[]>(memory?.photos || []);
+  const [isClosing, setIsClosing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const MAX_PHOTOS = 9;
+  const MAX_DESC_WORDS = 200;
+
+  const countChars = (text: string) => {
+    const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+    const englishWords = text.trim().split(/\s+/).filter(w => /[a-zA-Z]/.test(w)).length;
+    return chineseChars + englishWords;
+  };
+
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && memory) {
       setDate(memory.date);
       setTitle(memory.title);
       setDescription(memory.description);
@@ -28,15 +39,26 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
     }
   }, [isOpen, memory]);
 
+  if (!isOpen || !memory) return null;
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    Array.from(files).forEach(file => {
+    const remainingSlots = MAX_PHOTOS - photos.length;
+    const filesToProcess = Array.from(files).slice(0, remainingSlots);
+
+    filesToProcess.forEach(file => {
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         if (event.target?.result) {
-          setPhotos(prev => [...prev, event.target!.result as string]);
+          try {
+            const compressed = await compressImage(event.target.result as string);
+            setPhotos(prev => [...prev, compressed]);
+          } catch (error) {
+            console.error('Failed to compress image:', error);
+            setPhotos(prev => [...prev, event.target!.result as string]);
+          }
         }
       };
       reader.readAsDataURL(file);
@@ -47,7 +69,24 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
     setPhotos(prev => prev.filter((_, i) => i !== index));
   };
 
-  if (!isOpen) return null;
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const text = e.target.value;
+    if (countChars(text) <= MAX_DESC_WORDS) {
+      setDescription(text);
+    }
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+  };
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 300);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,35 +102,41 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
     };
 
     updateMemory(updatedMemory);
-    onClose();
+
+    // Trigger fade out
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 300);
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content glass-card" onClick={e => e.stopPropagation()}>
+    <div className={`modal-overlay ${isClosing ? 'modal-overlay--closing' : ''}`} onClick={handleClose}>
+      <div className={`modal-content glass-card ${isClosing ? 'modal-content--closing' : ''}`} onClick={e => e.stopPropagation()}>
         <header className="modal-header">
           <h2 className="modal-title">Edit Memory</h2>
-          <button className="modal-close" onClick={onClose}>&times;</button>
+          <button className="modal-close" onClick={handleClose}>&times;</button>
         </header>
 
-        <form className="modal-form" onSubmit={handleSubmit}>
+        <form id="edit-memory-form" className="modal-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Date</label>
-            <input 
-              type="date" 
-              value={date} 
-              onChange={e => setDate(e.target.value)} 
+            <input
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
               required
             />
           </div>
 
           <div className="form-group">
             <label>Title</label>
-            <input 
-              type="text" 
-              placeholder="e.g. Adoption Day" 
-              value={title} 
-              onChange={e => setTitle(e.target.value)} 
+            <input
+              type="text"
+              placeholder="e.g. Adoption Day"
+              value={title}
+              onChange={handleTitleChange}
               required
             />
           </div>
@@ -113,7 +158,7 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
           </div>
 
           <div className="form-group">
-            <label>Photos</label>
+            <label>Photos <span className="char-count">({photos.length}/{MAX_PHOTOS})</span></label>
             <div className="photo-upload">
               <input
                 ref={fileInputRef}
@@ -127,6 +172,7 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
                 type="button"
                 className="photo-add-btn"
                 onClick={() => fileInputRef.current?.click()}
+                disabled={photos.length >= MAX_PHOTOS}
               >
                 + Add Photos
               </button>
@@ -150,20 +196,22 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
           </div>
 
           <div className="form-group">
-            <label>Memory Description</label>
-            <textarea 
-              rows={4} 
-              placeholder="Write something beautiful..." 
-              value={description} 
-              onChange={e => setDescription(e.target.value)}
+            <label>Memory Description <span className="char-count">({countChars(description)}/{MAX_DESC_WORDS} chars)</span></label>
+            <textarea
+              rows={4}
+              placeholder="Write something beautiful..."
+              value={description}
+              onChange={handleDescriptionChange}
               required
             />
           </div>
+        </form>
 
-          <button type="submit" className="submit-btn">
+        <div className="modal-form-footer">
+          <button type="submit" form="edit-memory-form" className="submit-btn" aria-label="Save Changes">
             Save Changes
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );

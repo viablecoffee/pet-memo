@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import './Timeline.css';
 import type { Memory } from '../../types';
 
@@ -35,34 +35,93 @@ const getIcon = (title: string): string => {
 
 const Timeline: React.FC<TimelineProps> = ({ petName, memories, selectedId, onSelect, onAddClick }) => {
   // Group memories by year
-  const byYear = memories.reduce<Record<string, Memory[]>>((acc, m) => {
-    const year = m.date.slice(0, 4);
-    if (!acc[year]) acc[year] = [];
-    acc[year].push(m);
-    return acc;
-  }, {});
+  const byYear = useMemo(() => {
+    return memories.reduce<Record<string, Memory[]>>((acc, m) => {
+      const year = m.date.slice(0, 4);
+      if (!acc[year]) acc[year] = [];
+      acc[year].push(m);
+      return acc;
+    }, {});
+  }, [memories]);
+
+  const years = Object.keys(byYear).sort();
+
+  // Default: expand the most recent year
+  const [expandedYears, setExpandedYears] = useState<Set<string>>(
+    () => new Set()
+  );
+
+  const toggleYear = (year: string) => {
+    setExpandedYears(prev => {
+      const next = new Set(prev);
+      if (next.has(year)) {
+        next.delete(year);
+      } else {
+        next.add(year);
+      }
+      return next;
+    });
+  };
+
+  const allExpanded = years.every(y => expandedYears.has(y));
+
+  const toggleAll = () => {
+    if (allExpanded) {
+      setExpandedYears(new Set());
+    } else {
+      setExpandedYears(new Set(years));
+    }
+  };
 
   return (
     <aside className="timeline glass-card">
-      <h2 className="timeline-title">{petName}'s Journey</h2>
+      <div className="timeline-header-row">
+        <h2 className="timeline-title">{petName}'s Journey</h2>
+        <button className="timeline-toggle-all" onClick={toggleAll} title={allExpanded ? 'Collapse all' : 'Expand all'}>
+          {allExpanded ? '−' : '+'}
+        </button>
+      </div>
       <div className="timeline-list">
-        {Object.entries(byYear).map(([year, mems]) => (
-          <div key={year} className="timeline-year-group">
-            {mems.map((m, i) => (
-              <div
-                key={m.id}
-                className={`timeline-item ${selectedId === m.id ? 'active' : ''}`}
-                onClick={() => onSelect(m.id)}
-              >
-                {i === 0 && <span className="year-label">{year}</span>}
-                <div className="timeline-dot">
-                  <span className="dot-icon">{getIcon(m.title)}</span>
-                </div>
-                <span className="item-title">{m.title}</span>
+        <div className="timeline-list-inner">
+          {years.map(year => {
+            const mems = byYear[year];
+            const isExpanded = expandedYears.has(year);
+            const hasSelectedItem = mems.some(m => m.id === selectedId);
+
+            return (
+              <div key={year} className="timeline-year-group">
+                {/* Year header - clickable to expand/collapse */}
+                <button
+                  className={`timeline-year-header ${isExpanded ? 'expanded' : ''} ${hasSelectedItem ? 'has-active' : ''}`}
+                  onClick={() => toggleYear(year)}
+                  aria-expanded={isExpanded}
+                >
+                  <span className="year-header__label">{year}</span>
+                  <span className="year-header__chevron">{isExpanded ? '▾' : '▸'}</span>
+
+                </button>
+
+                {/* Collapsible content */}
+                {isExpanded && (
+                  <div className="timeline-year-items">
+                    {mems.map(m => (
+                      <div
+                        key={m.id}
+                        className={`timeline-item ${selectedId === m.id ? 'active' : ''}`}
+                        onClick={() => onSelect(m.id)}
+                      >
+                        <div className="timeline-dot">
+                          <span className="dot-icon">{getIcon(m.title)}</span>
+                        </div>
+                        <span className="item-title">{m.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        ))}
+            );
+          })}
+        </div>
       </div>
 
       {/* Add memory button */}
@@ -74,3 +133,4 @@ const Timeline: React.FC<TimelineProps> = ({ petName, memories, selectedId, onSe
 };
 
 export default Timeline;
+

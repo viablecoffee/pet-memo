@@ -1,7 +1,56 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import './PetProfile.css';
 import { useStore } from '../../store/useStore';
 import type { Pet } from '../../types';
+import AvatarBuilder from '../AvatarBuilder/AvatarBuilder';
+
+const TagInput = ({ value, onChange, placeholder }: { value: string; onChange: (val: string) => void; placeholder: string }) => {
+  const [inputValue, setInputValue] = useState('');
+  const tags = value ? value.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const newTag = inputValue.trim();
+      if (newTag && !tags.includes(newTag)) {
+        onChange([...tags, newTag].join(', '));
+      }
+      setInputValue('');
+    } else if (e.key === 'Backspace' && !inputValue && tags.length > 0) {
+      onChange(tags.slice(0, -1).join(', '));
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    onChange(tags.filter(t => t !== tagToRemove).join(', '));
+  };
+
+  return (
+    <div className="tag-input-container">
+      {tags.map(tag => (
+        <span key={tag} className="tag-chip">
+          {tag}
+          <button type="button" onClick={() => removeTag(tag)} className="tag-remove-btn">&times;</button>
+        </span>
+      ))}
+      <input
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={() => {
+          const newTag = inputValue.trim();
+          if (newTag && !tags.includes(newTag)) {
+            onChange([...tags, newTag].join(', '));
+          }
+          setInputValue('');
+        }}
+        placeholder={tags.length === 0 ? placeholder : 'Add more... (press Enter)'}
+        className="tag-input-field"
+      />
+    </div>
+  );
+};
 
 const PetProfile: React.FC = () => {
   const { pet, memories, updatePet } = useStore();
@@ -9,11 +58,154 @@ const PetProfile: React.FC = () => {
   const [editForm, setEditForm] = useState<Pet>(pet);
   const [isGenderOpen, setIsGenderOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [galleryKey, setGalleryKey] = useState(0);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
+
+  const [isAvatarBuilderOpen, setIsAvatarBuilderOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const itemsPerPage = 3;
-  const totalPages = Math.ceil(memories.length / itemsPerPage);
+  const galleryRef = useRef<HTMLDivElement>(null);
+
+  // Calculate total items for navigation boundaries
+  const totalItems = memories.length;
+  // Duplicate memories to create a seamless loop: [Set 1, Set 2, Middle Set, Set 3, Set 4] 
+  // Actually, Set 1-2-3 is enough for basic looping.
+  const displayMemories = [...memories, ...memories, ...memories];
+
+  // Set initial index to the middle set if not already set or out of bounds
+  useEffect(() => {
+    if (galleryIndex < totalItems || galleryIndex >= totalItems * 2) {
+      setGalleryIndex(totalItems);
+    }
+  }, [totalItems]);
+
+  const [dragStartX, setDragStartX] = useState<number | null>(null);
+  const [dragStartTime, setDragStartTime] = useState<number>(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [transitionDuration, setTransitionDuration] = useState(0.5);
+
+  const handleNavClick = (direction: 'prev' | 'next', jump: number = 1) => {
+    if (direction === 'next') {
+      const nextIndex = galleryIndex + jump;
+      setGalleryIndex(nextIndex);
+    } else {
+      const prevIndex = galleryIndex - jump;
+      setGalleryIndex(prevIndex);
+    }
+    setGalleryKey(k => k + 1);
+  };
+
+  // Seamless teleportation logic
+  useEffect(() => {
+    if (isDragging) return;
+
+    // If we've moved into the first or third set, teleport back to the middle set
+    // A delay slightly longer than the transition ensures the transition finishes first
+    const timer = setTimeout(() => {
+      if (galleryIndex < totalItems) {
+        setTransitionDuration(0);
+        setGalleryIndex(galleryIndex + totalItems);
+      } else if (galleryIndex >= totalItems * 2) {
+        setTransitionDuration(0);
+        setGalleryIndex(galleryIndex - totalItems);
+      }
+    }, transitionDuration * 1000);
+
+    return () => clearTimeout(timer);
+  }, [galleryIndex, isDragging, totalItems, transitionDuration]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setDragStartX(e.touches[0].clientX);
+    setDragStartTime(Date.now());
+    setIsDragging(true);
+    setTransitionDuration(0.5);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (dragStartX === null) return;
+    const currentX = e.touches[0].clientX;
+    setDragOffset(currentX - dragStartX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (dragStartX === null || galleryRef.current === null) return;
+    const dragEndX = e.changedTouches[0].clientX;
+    const dragEndTime = Date.now();
+
+    const diff = dragStartX - dragEndX;
+    const time = dragEndTime - dragStartTime;
+    const velocity = Math.abs(diff) / time; // pixels per ms
+
+    // Determine jump based on velocity
+    let jump = 1;
+    let duration = 0.5;
+
+    if (velocity > 1.5) {
+      jump = Math.min(Math.floor(velocity * 2), 5); // Max jump of 5 items
+      duration = 0.4 + (jump * 0.1); // Slightly longer for more items
+    }
+
+    const threshold = galleryRef.current.clientWidth * 0.15;
+
+    if (Math.abs(diff) > threshold || velocity > 0.5) {
+      setTransitionDuration(duration);
+      handleNavClick(diff > 0 ? 'next' : 'prev', jump);
+    }
+
+    setDragStartX(null);
+    setDragOffset(0);
+    setIsDragging(false);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setDragStartX(e.clientX);
+    setDragStartTime(Date.now());
+    setIsDragging(true);
+    setTransitionDuration(0.5);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (dragStartX === null) return;
+    setDragOffset(e.clientX - dragStartX);
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (dragStartX === null || galleryRef.current === null) return;
+    const dragEndX = e.clientX;
+    const dragEndTime = Date.now();
+
+    const diff = dragStartX - dragEndX;
+    const time = dragEndTime - dragStartTime;
+    const velocity = Math.abs(diff) / time;
+
+    let jump = 1;
+    let duration = 0.5;
+
+    if (velocity > 1.5) {
+      jump = Math.min(Math.floor(velocity * 2), 5);
+      duration = 0.4 + (jump * 0.1);
+    }
+
+    const threshold = galleryRef.current.clientWidth * 0.15;
+
+    if (Math.abs(diff) > threshold || velocity > 0.5) {
+      setTransitionDuration(duration);
+      handleNavClick(diff > 0 ? 'next' : 'prev', jump);
+    }
+
+    setDragStartX(null);
+    setDragOffset(0);
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      setDragStartX(null);
+      setDragOffset(0);
+      setIsDragging(false);
+    }
+  };
 
   const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -97,8 +289,7 @@ const PetProfile: React.FC = () => {
                       onClick={() => setIsGenderOpen(!isGenderOpen)}
                     >
                       {genderOptions.find(o => o.value === editForm.gender)?.label || 'Not set'}
-                      <span className="dropdown-arrow">▼</span>
-                    </div>
+                      <span className="dropdown-arrow">▼</span>                    </div>
                     {isGenderOpen && (
                       <div className="dropdown-options">
                         {genderOptions.map(option => (
@@ -152,6 +343,22 @@ const PetProfile: React.FC = () => {
                     placeholder="e.g. Golden"
                   />
                 </div>
+                <div className="edit-form-item full-width">
+                  <label>Hobbies</label>
+                  <TagInput
+                    value={editForm.hobbies || ''}
+                    onChange={(val) => setEditForm({ ...editForm, hobbies: val })}
+                    placeholder="e.g. Running, Swimming"
+                  />
+                </div>
+                <div className="edit-form-item full-width">
+                  <label>Favorite Food</label>
+                  <TagInput
+                    value={editForm.favoriteFood || ''}
+                    onChange={(val) => setEditForm({ ...editForm, favoriteFood: val })}
+                    placeholder="e.g. Beef, Apples"
+                  />
+                </div>
               </div>
               <div className="edit-actions">
                 <button className="edit-cancel-btn" onClick={() => setIsEditing(false)}>
@@ -163,6 +370,19 @@ const PetProfile: React.FC = () => {
               </div>
             </section>
           </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAvatarBuilderOpen) {
+    return (
+      <div className="pet-profile">
+        <div className="pet-profile-frame">
+          <AvatarBuilder
+            isOpen={isAvatarBuilderOpen}
+            onClose={() => setIsAvatarBuilderOpen(false)}
+          />
         </div>
       </div>
     );
@@ -183,9 +403,16 @@ const PetProfile: React.FC = () => {
             </div>
             <h2 className="pet-name">{pet.name} 🐾</h2>
             <p className="pet-breed">{pet.breed || 'Pet'}</p>
-            <button className="pet-edit-btn" onClick={() => { setEditForm(pet); setIsEditing(true); }}>
-              ✏️ Edit Profile
-            </button>
+            <div className="pet-actions" style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px' }}>
+              <button className="pet-edit-btn" onClick={() => { setEditForm(pet); setIsEditing(true); }}>
+                ✏️ Edit Profile
+              </button>
+              {/*
+              <button className="pet-edit-btn" onClick={() => setIsAvatarBuilderOpen(true)} style={{ background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)', border: 'none' }}>
+                🎨 Customize Avatar
+              </button>
+              */}
+            </div>
           </section>
 
           <section className="pet-info-card">
@@ -215,6 +442,22 @@ const PetProfile: React.FC = () => {
                 <span className="info-label">Color</span>
                 <span className="info-value">{pet.color || 'Not set'}</span>
               </div>
+              <div className="info-item full-width">
+                <span className="info-label">Hobbies</span>
+                <div className="pet-tag-list">
+                  {pet.hobbies ? pet.hobbies.split(',').map((tag, i) => (
+                    <span key={i} className="pet-tag">{tag.trim()}</span>
+                  )) : <span className="info-value">Not set</span>}
+                </div>
+              </div>
+              <div className="info-item full-width">
+                <span className="info-label">Favorite Food</span>
+                <div className="pet-tag-list">
+                  {pet.favoriteFood ? pet.favoriteFood.split(',').map((tag, i) => (
+                    <span key={i} className="pet-tag">{tag.trim()}</span>
+                  )) : <span className="info-value">Not set</span>}
+                </div>
+              </div>
             </div>
           </section>
 
@@ -224,48 +467,75 @@ const PetProfile: React.FC = () => {
               <span className="memories-count">{memories.length} Memories</span>
             </div>
             <p className="memories-subtitle">Memory Highlights</p>
-            <div className="memories-gallery">
-              <button 
-                className="gallery-nav gallery-nav--prev"
-                onClick={() => setGalleryIndex(i => (i - 1 + totalPages) % totalPages)}
-              >←</button>
-              
-              {[0, 1, 2].map((offset) => {
-                const memIndex = (galleryIndex * itemsPerPage + offset) % memories.length;
-                const memory = memories[memIndex];
-                const handleClick = () => {
-                  if (!memory.photos?.[0]) return;
-                  if (lastClickedIndex === offset && enlargedImage) {
-                    setEnlargedImage(null);
-                    setLastClickedIndex(null);
-                  } else {
-                    setEnlargedImage(memory.photos[0]);
-                    setLastClickedIndex(offset);
-                  }
-                };
-                return (
-                  <div 
-                    key={`${galleryIndex}-${offset}`} 
-                    className="memory-highlight-item"
-                    onClick={handleClick}
-                  >
-                    {memory.photos && memory.photos.length > 0 ? (
-                      <div className="memory-highlight-img">
-                        <img src={memory.photos[0]} alt={memory.title} />
+            <div
+              className={`memories-gallery ${isDragging ? 'dragging' : ''}`}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+            >
+              {memories.length > 0 && (
+                <button
+                  className="gallery-nav gallery-nav--prev"
+                  onClick={(e) => { e.stopPropagation(); handleNavClick('prev'); }}
+                >←</button>
+              )}
+
+              <div className="gallery-viewport" ref={galleryRef}>
+                <div
+                  className="gallery-strip"
+                  style={{
+                    transform: `translateX(calc(-${galleryIndex * 33.333}% + ${dragOffset}px))`,
+                    transition: isDragging || transitionDuration === 0 ? 'none' : `transform ${transitionDuration}s cubic-bezier(0.16, 1, 0.3, 1)`
+                  }}
+                >
+                  {displayMemories.length > 0 ? displayMemories.map((memory, index) => {
+                    const handleClick = () => {
+                      if (!memory.photos?.[0]) return;
+                      // Use realIndex for toggling enlarged image state
+                      if (lastClickedIndex === index && enlargedImage) {
+                        setEnlargedImage(null);
+                        setLastClickedIndex(null);
+                      } else {
+                        setEnlargedImage(memory.photos[0]);
+                        setLastClickedIndex(index);
+                      }
+                    };
+
+                    return (
+                      <div
+                        key={`${galleryKey}-${index}`}
+                        className="memory-highlight-item"
+                        onClick={handleClick}
+                      >
+                        {memory.photos && memory.photos.length > 0 ? (
+                          <div className="memory-highlight-img">
+                            <img src={memory.photos[0]} alt={memory.title} draggable="false" />
+                          </div>
+                        ) : (
+                          <div className="memory-highlight-placeholder">
+                            <span className="memory-emoji">{memory.emoji}</span>
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="memory-highlight-placeholder">
-                        <span className="memory-emoji">{memory.emoji}</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              
-              <button 
-                className="gallery-nav gallery-nav--next"
-                onClick={() => setGalleryIndex(i => (i + 1) % totalPages)}
-              >→</button>
+                    );
+                  }) : (
+                    <div className="memories-empty-state">
+                      <p>No memories yet. Add your first memory from the Memory Space!</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {memories.length > 0 && (
+                <button
+                  className="gallery-nav gallery-nav--next"
+                  onClick={(e) => { e.stopPropagation(); handleNavClick('next'); }}
+                >→</button>
+              )}
             </div>
 
             {enlargedImage && (
@@ -281,3 +551,5 @@ const PetProfile: React.FC = () => {
 };
 
 export default PetProfile;
+
+

@@ -20,4 +20,15 @@ export interface Pet {
   breed?: string;
   weight?: string;
   color?: string;
+  hobbies?: string;
+  favoriteFood?: string;
+  aiChatHistory?: { role: 'user' | 'model'; text: string }[];
+  aiInsights?: { label: string; text: string }[];
+  lastInsightUpdate?: string | null;
+}
+
+export interface Track {
+  id: string;
+  name: string;
+  url: string;
 }

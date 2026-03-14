@@ -37,8 +37,12 @@
   color: var(--color-accent);
 }
 
-.topbar__brand-icon {
-  filter: drop-shadow(0 0 8px var(--color-glow));
+.topbar__brand-img {
+  height: 40px;
+  max-height: 100%;
+  width: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .topbar__brand-name {
@@ -89,6 +93,45 @@
 .topbar__actions {
   display: flex;
   gap: 12px;
+  align-items: center;
+}
+
+.topbar__music-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.topbar__music-popup {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: -144px;
+  /* Center 320px player under 32px icon: (320-32)/2 */
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.topbar__music-popup--visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+@keyframes music-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .topbar__btn {
@@ -110,13 +153,198 @@
   background: rgba(200, 169, 110, 0.1);
 }
 
+.topbar__profile-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .topbar__profile {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-left: 20px;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px 12px 4px 6px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.topbar__profile:hover,
+.topbar__profile--active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(200, 169, 110, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.topbar__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(200, 169, 110, 0.5);
+  background: #1a1a2e;
+}
+
+.topbar__username {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.topbar__dropdown-icon {
+  color: rgba(255, 255, 255, 0.5);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.topbar__dropdown-icon--open {
+  transform: rotate(180deg);
+  color: var(--color-accent);
+}
+
+/* Pet Dropdown */
+.topbar__pet-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 220px;
+  background: rgba(13, 8, 24, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(200, 169, 110, 0.2);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+}
+
+.topbar__pet-dropdown--visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.topbar__pet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.topbar__pet-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.topbar__pet-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.topbar__pet-item--active {
+  background: rgba(200, 169, 110, 0.12);
+}
+
+.topbar__pet-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #2a2a4a;
+}
+
+.topbar__pet-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.topbar__pet-item--active .topbar__pet-name {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.topbar__pet-active-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-moon);
+  box-shadow: 0 0 8px var(--color-moon);
+  flex-shrink: 0;
+  margin-left: auto;
+  /* Push to right if no delete button, or push itself and delete button to right */
+}
+
+.topbar__pet-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  /* This will push the button to the far right */
+}
+
+/* If there is an active dot, we want it to also be on the right, so we override margin-left on delete-btn if dot exists? 
+   Actually, if BOTH have margin-left: auto, the first one (dot) wins and pushes the rest. 
+   Let's keep it simple: push the first right-aligned item. */
+
+.topbar__pet-item:has(.topbar__pet-active-dot) .topbar__pet-delete-btn {
+  margin-left: 8px;
+  /* Reset auto margin if dot is already pushing */
+}
+
+.topbar__pet-item:hover .topbar__pet-delete-btn {
+  opacity: 0.5;
+}
+
+.topbar__pet-delete-btn:hover {
+  opacity: 1 !important;
+  transform: scale(1.2);
+}
+
+.topbar__add-pet-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(200, 169, 110, 0.4);
+  border-radius: 10px;
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.topbar__add-pet-btn:hover {
+  background: rgba(200, 169, 110, 0.1);
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.topbar__add-pet-icon {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .topbar__avatar {
@@ -135,4 +363,130 @@
 
 .topbar__dropdown-icon {
   color: var(--color-text-muted);
+}
+
+/* Mobile menu button */
+.topbar__menu-btn {
+  display: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-muted);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.topbar__menu-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Mobile dropdown menu */
+.topbar__mobile-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(13, 8, 24, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(200, 169, 110, 0.2);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+
+  /* Animation initial state */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.topbar__mobile-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.topbar__mobile-nav-link {
+  padding: 12px 16px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  text-decoration: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  border: none;
+  text-align: left;
+}
+
+.topbar__mobile-nav-link:hover {
+  background: rgba(200, 169, 110, 0.1);
+  color: var(--color-text-primary);
+}
+
+.topbar__mobile-nav-link--active {
+  color: var(--color-text-primary);
+  background: rgba(200, 169, 110, 0.15);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* Responsive: Intermediate — hide brand name but keep nav links */
+@media (max-width: 1060px) {
+  .topbar__brand-name {
+    display: none;
+  }
+}
+
+/* Responsive: Tablet — switch to hamburger menu */
+@media (max-width: 960px) {
+  .topbar {
+    padding: 0 16px;
+    height: 56px;
+  }
+
+  .topbar__brand-name {
+    display: none;
+  }
+
+  .topbar__nav {
+    display: none;
+  }
+
+  .topbar__menu-btn {
+    display: flex;
+  }
+
+  .topbar__username {
+    display: none;
+  }
+
+  .topbar__profile {
+    padding-left: 8px;
+    border-left: none;
+  }
+}
+
+/* Responsive: Mobile */
+@media (max-width: 480px) {
+  .topbar {
+    padding: 0 8px;
+    height: 50px;
+  }
+
+  .topbar__avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .topbar__dropdown-icon {
+    display: none;
+  }
 }
