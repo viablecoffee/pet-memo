@@ -181,6 +181,9 @@
 }
 
 /* ── Year spacing ───────────────────────────────── */
+.timeline-year-group:first-child {
+  margin-top: 20px;
+}
 .timeline-year-group+.timeline-year-group {
   margin-top: 18px;
 }

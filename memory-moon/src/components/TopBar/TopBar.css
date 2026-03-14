@@ -37,8 +37,12 @@
   color: var(--color-accent);
 }
 
-.topbar__brand-icon {
-  filter: drop-shadow(0 0 8px var(--color-glow));
+.topbar__brand-img {
+  height: 40px;
+  max-height: 100%;
+  width: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .topbar__brand-name {
