@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import './PetProfile.css';
 import { useStore } from '../../store/useStore';
 import type { Pet } from '../../types';
@@ -286,9 +286,11 @@ const PetProfile: React.FC = () => {
               <button className="pet-edit-btn" onClick={() => { setEditForm(pet); setIsEditing(true); }}>
                 ✏️ Edit Profile
               </button>
+              {/*
               <button className="pet-edit-btn" onClick={() => setIsAvatarBuilderOpen(true)} style={{ background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)', border: 'none' }}>
                 🎨 Customize Avatar
               </button>
+              */}
             </div>
           </section>
 

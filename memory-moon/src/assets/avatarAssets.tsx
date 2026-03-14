@@ -312,9 +312,120 @@ export const avatarAssets: AvatarAsset[] = [
         <circle cx="0" cy="-10" r="8" fill="#FFB6C1" />
         <circle cx="10" cy="0" r="8" fill="#FFB6C1" />
         <circle cx="0" cy="10" r="8" fill="#FFB6C1" />
-        <circle cx="-10" cy="0" r="8" fill="#FFB6C1" />
-        <circle cx="0" cy="0" r="5" fill="#FFD700" />
       </g>
+    )
+  },
+  // --- WESTIE ---
+  {
+    id: 'body-westie',
+    category: 'body',
+    name: 'Westie',
+    renderSVG: () => (
+      <image href="/assets/avatar/face_base.png" x="15" y="30" width="70" height="70" />
+    )
+  },
+  {
+    id: 'ears-westie-stand',
+    category: 'ears',
+    name: 'Westie Stand',
+    renderSVG: () => (
+      <image href="/assets/avatar/standing_ear.png" x="20" y="5" width="60" height="54" />
+    )
+  },
+  {
+    id: 'ears-westie-lie',
+    category: 'ears',
+    name: 'Westie Lie',
+    renderSVG: () => (
+      <image href="/assets/avatar/lie_ear.png" x="15" y="20" width="70" height="42" />
+    )
+  },
+  {
+    id: 'ears-westie-half',
+    category: 'ears',
+    name: 'Westie Half',
+    renderSVG: () => (
+      <image href="/assets/avatar/half_lie_ear.png" x="12" y="10" width="76" height="38" />
+    )
+  },
+  {
+    id: 'eyes-westie-open',
+    category: 'eyes',
+    name: 'Westie Open',
+    renderSVG: () => (
+      <image href="/assets/avatar/open_eye.png" x="25" y="45" width="50" height="23" />
+    )
+  },
+  {
+    id: 'eyes-westie-closed',
+    category: 'eyes',
+    name: 'Westie Closed',
+    renderSVG: () => (
+      <image href="/assets/avatar/closed_eye.png" x="25" y="48" width="50" height="17" />
+    )
+  },
+  {
+    id: 'mouth-westie-closed',
+    category: 'mouth',
+    name: 'Westie Closed',
+    renderSVG: () => (
+      <image href="/assets/avatar/closed_mouth.png" x="40" y="65" width="20" height="15.5" />
+    )
+  },
+  {
+    id: 'mouth-westie-smell',
+    category: 'mouth',
+    name: 'Westie Smell',
+    renderSVG: () => (
+      <image href="/assets/avatar/smell_mouth.png" x="40" y="65" width="20" height="18" />
+    )
+  },
+  {
+    id: 'acc-collar-2',
+    category: 'accessory',
+    name: 'Striped Collar',
+    renderSVG: () => (
+      <image href="/assets/avatar/Collar.png" x="20" y="80" width="60" height="26" />
+    )
+  },
+  {
+    id: 'acc-bell',
+    category: 'accessory',
+    name: 'Bell',
+    renderSVG: () => (
+      <image href="/assets/avatar/bell.png" x="40" y="85" width="20" height="19" />
+    )
+  },
+  {
+    id: 'acc-blue-bow',
+    category: 'accessory',
+    name: 'Blue Bow',
+    renderSVG: () => (
+      <image href="/assets/avatar/blue_bow.png" x="35" y="82" width="30" height="17" />
+    )
+  },
+  {
+    id: 'acc-red-bow-2',
+    category: 'accessory',
+    name: 'Red Bow 2',
+    renderSVG: () => (
+      <image href="/assets/avatar/red_bow.png" x="35" y="82" width="30" height="19" />
+    )
+  },
+  {
+    id: 'acc-flower-2',
+    category: 'accessory',
+    name: 'Flower 2',
+    renderSVG: () => (
+      <image href="/assets/avatar/flower.png" x="65" y="20" width="20" height="13" />
+    )
+  },
+  {
+    id: 'acc-glass',
+    category: 'accessory',
+    name: 'Glasses',
+    renderSVG: () => (
+      <image href="/assets/avatar/glass.png" x="20" y="40" width="60" height="34" />
     )
   }
 ];
