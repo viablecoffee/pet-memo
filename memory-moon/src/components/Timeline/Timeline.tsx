@@ -82,44 +82,46 @@ const Timeline: React.FC<TimelineProps> = ({ petName, memories, selectedId, onSe
         </button>
       </div>
       <div className="timeline-list">
-        {years.map(year => {
-          const mems = byYear[year];
-          const isExpanded = expandedYears.has(year);
-          const hasSelectedItem = mems.some(m => m.id === selectedId);
+        <div className="timeline-list-inner">
+          {years.map(year => {
+            const mems = byYear[year];
+            const isExpanded = expandedYears.has(year);
+            const hasSelectedItem = mems.some(m => m.id === selectedId);
 
-          return (
-            <div key={year} className="timeline-year-group">
-              {/* Year header - clickable to expand/collapse */}
-              <button
-                className={`timeline-year-header ${isExpanded ? 'expanded' : ''} ${hasSelectedItem ? 'has-active' : ''}`}
-                onClick={() => toggleYear(year)}
-                aria-expanded={isExpanded}
-              >
-                <span className="year-header__label">{year}</span>
-                <span className="year-header__chevron">{isExpanded ? '▾' : '▸'}</span>
+            return (
+              <div key={year} className="timeline-year-group">
+                {/* Year header - clickable to expand/collapse */}
+                <button
+                  className={`timeline-year-header ${isExpanded ? 'expanded' : ''} ${hasSelectedItem ? 'has-active' : ''}`}
+                  onClick={() => toggleYear(year)}
+                  aria-expanded={isExpanded}
+                >
+                  <span className="year-header__label">{year}</span>
+                  <span className="year-header__chevron">{isExpanded ? '▾' : '▸'}</span>
 
-              </button>
+                </button>
 
-              {/* Collapsible content */}
-              {isExpanded && (
-                <div className="timeline-year-items">
-                  {mems.map(m => (
-                    <div
-                      key={m.id}
-                      className={`timeline-item ${selectedId === m.id ? 'active' : ''}`}
-                      onClick={() => onSelect(m.id)}
-                    >
-                      <div className="timeline-dot">
-                        <span className="dot-icon">{getIcon(m.title)}</span>
+                {/* Collapsible content */}
+                {isExpanded && (
+                  <div className="timeline-year-items">
+                    {mems.map(m => (
+                      <div
+                        key={m.id}
+                        className={`timeline-item ${selectedId === m.id ? 'active' : ''}`}
+                        onClick={() => onSelect(m.id)}
+                      >
+                        <div className="timeline-dot">
+                          <span className="dot-icon">{getIcon(m.title)}</span>
+                        </div>
+                        <span className="item-title">{m.title}</span>
                       </div>
-                      <span className="item-title">{m.title}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Add memory button */}
