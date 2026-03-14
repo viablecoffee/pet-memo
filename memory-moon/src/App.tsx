@@ -70,6 +70,8 @@ const App: React.FC = () => {
                     onPetProfile={() => setCurrentView(currentView === 'profile' ? 'space' : 'profile')}
                     onAI={() => setCurrentView(currentView === 'ai' ? 'space' : 'ai')}
                     activeView={currentView}
+                    petAvatar={pet.avatarUrl}
+                    petName={pet.name}
                 />
                 {renderMainContent()}
             </div>

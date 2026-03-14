@@ -10,9 +10,11 @@ interface TopBarProps {
   onSpace?: () => void;
   isVisible: boolean;
   activeView?: 'space' | 'profile' | 'ai';
+  petAvatar?: string;
+  petName?: string;
 }
 
-const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetProfile, onAI, onSpace, isVisible, activeView = 'space' }) => {
+const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetProfile, onAI, onSpace, isVisible, activeView = 'space', petAvatar, petName }) => {
   return (
     <header className={`topbar ${isVisible ? 'topbar--visible' : ''}`}>
       <div className="topbar__left">
@@ -69,8 +71,8 @@ const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetPro
         </div>
 
         <div className="topbar__profile">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Milo" alt="Milo" className="topbar__avatar" />
-          <span className="topbar__username">Milo</span>
+          <img src={petAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${petName || 'Milo'}`} alt={petName || 'Milo'} className="topbar__avatar" />
+          <span className="topbar__username">{petName || 'Milo'}</span>
           <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" className="topbar__dropdown-icon">
             <path d="M7 10l5 5 5-5z" />
           </svg>
