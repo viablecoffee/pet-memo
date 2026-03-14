@@ -1,28 +1,79 @@
 import React, { Suspense, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Sphere, MeshDistortMaterial, Stars, OrbitControls, Billboard, useTexture } from '@react-three/drei';
+import { MeshDistortMaterial, Stars, OrbitControls, Billboard, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import './MoonScene.css';
 import { useStore } from '../../store/useStore';
 
+// Shader patch to blend seams for non-seamless textures
+const useSeamPatch = () => {
+  return useMemo(() => (shader: any) => {
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <uv_pars_vertex>',
+      `#include <uv_pars_vertex>
+       varying vec2 vUvPatched;`
+    );
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <uv_vertex>',
+      `#include <uv_vertex>
+       vUvPatched = uv;`
+    );
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <map_pars_fragment>',
+      `#include <map_pars_fragment>
+       varying vec2 vUvPatched;
+       vec4 sampleSeamless(sampler2D tex, vec2 uv) {
+         float blendWidth = 0.015; // Width of the blend area
+         if (uv.x < blendWidth) {
+           float t = uv.x / blendWidth;
+           return mix(texture2D(tex, vec2(uv.x + 1.0, uv.y)), texture2D(tex, uv), t);
+         } else if (uv.x > 1.0 - blendWidth) {
+           float t = (1.0 - uv.x) / blendWidth;
+           return mix(texture2D(tex, vec2(uv.x - 1.0, uv.y)), texture2D(tex, uv), t);
+         }
+         return texture2D(tex, uv);
+       }`
+    );
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <map_fragment>',
+      `#ifdef USE_MAP
+         diffuseColor *= sampleSeamless( map, vUvPatched );
+       #endif`
+    );
+  }, []);
+};
+
 // Moon mesh - now rotates with the group
 const MoonMesh: React.FC = () => {
   const { planetStyle } = useStore();
+  const patchSeam = useSeamPatch();
 
   // Load textures
   const textures = useTexture({
     artistic: '/assets/images/artistic_moon_v2.png',
-    green: '/assets/images/planet_green.png',
     blue: '/assets/images/planet_blue.png'
   }, (tex) => {
     if (Array.isArray(tex)) return;
-    tex.artistic.anisotropy = 16;
-    if (tex.green) tex.green.anisotropy = 16;
-    if (tex.blue) tex.blue.anisotropy = 16;
+    
+    // Common settings
+    const configureTexture = (t: THREE.Texture) => {
+      t.anisotropy = 16;
+      t.wrapS = THREE.RepeatWrapping;
+      t.wrapT = THREE.ClampToEdgeWrapping;
+      t.minFilter = THREE.LinearFilter;
+      t.magFilter = THREE.LinearFilter;
+      t.generateMipmaps = false;
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.needsUpdate = true;
+    };
+
+    if (tex.artistic) configureTexture(tex.artistic);
+    if (tex.blue) configureTexture(tex.blue);
   });
 
   return (
-    <Sphere args={[1.8, 64, 64]}>
+    <mesh>
+      <sphereGeometry args={[1.8, 128, 128]} />
       {planetStyle === 'minimal' ? (
         <MeshDistortMaterial
           color="#c8a96e"
@@ -40,14 +91,7 @@ const MoonMesh: React.FC = () => {
           metalness={0}
           emissive="#ffffff"
           emissiveIntensity={0.08}
-        />
-      ) : planetStyle === 'green' ? (
-        <meshStandardMaterial
-          map={textures.green}
-          roughness={0.8}
-          metalness={0.1}
-          emissive="#ffffff"
-          emissiveIntensity={0.03}
+          onBeforeCompile={patchSeam}
         />
       ) : (
         <meshStandardMaterial
@@ -56,9 +100,10 @@ const MoonMesh: React.FC = () => {
           metalness={0.2}
           emissive="#7fbfff"
           emissiveIntensity={0.05}
+          onBeforeCompile={patchSeam}
         />
       )}
-    </Sphere>
+    </mesh>
   );
 };
 
