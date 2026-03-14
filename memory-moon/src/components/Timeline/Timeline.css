@@ -95,21 +95,24 @@
   position: relative;
 }
 
-/* The connector line runs behind the dots */
+/* The connector line runs the full height of the list */
 .timeline-list::before {
   content: '';
   position: absolute;
   left: 17px;
-  top: 18px;
-  bottom: 18px;
+  top: 0;
+  bottom: 0;
   width: 1px;
   background: linear-gradient(to bottom,
       transparent,
-      rgba(200, 169, 110, 0.35) 10%,
-      rgba(200, 169, 110, 0.35) 90%,
+      rgba(200, 169, 110, 0.4) 8%,
+      rgba(200, 169, 110, 0.4) 92%,
       transparent);
   pointer-events: none;
 }
+
+
+
 
 .timeline-year-group {
   display: flex;
@@ -168,6 +171,7 @@
 
 /* ── Expanded items container ────────────────────── */
 .timeline-year-items {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding-left: 4px;

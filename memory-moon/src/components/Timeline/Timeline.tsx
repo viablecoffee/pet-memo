@@ -48,7 +48,7 @@ const Timeline: React.FC<TimelineProps> = ({ petName, memories, selectedId, onSe
 
   // Default: expand the most recent year
   const [expandedYears, setExpandedYears] = useState<Set<string>>(
-    () => new Set(years.length > 0 ? [years[years.length - 1]] : [])
+    () => new Set()
   );
 
   const toggleYear = (year: string) => {
@@ -97,9 +97,7 @@ const Timeline: React.FC<TimelineProps> = ({ petName, memories, selectedId, onSe
               >
                 <span className="year-header__label">{year}</span>
                 <span className="year-header__chevron">{isExpanded ? '▾' : '▸'}</span>
-                {!isExpanded && hasSelectedItem && (
-                  <span className="year-header__dot" />
-                )}
+
               </button>
 
               {/* Collapsible content */}
