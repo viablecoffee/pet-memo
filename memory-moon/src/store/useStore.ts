@@ -97,7 +97,7 @@ export const useStore = create<AppState>((set) => ({
   pet: DEMO_PET,
   memories: DEMO_MEMORIES,
   selectedMemoryId: '1',
-  isPlaying: false,
+  isPlaying: true, // Default to true for auto-play
   volume: parseFloat(localStorage.getItem('app_volume') || '0.7'),
   apiKey: localStorage.getItem('gemini_api_key') || '',
   aiModel: localStorage.getItem('gemini_ai_model') || 'gemini-1.5-flash',
