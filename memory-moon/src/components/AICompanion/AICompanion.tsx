@@ -194,7 +194,7 @@ const AICompanion: React.FC = () => {
                 <input
                   type="text"
                   className="ai-settings-input"
-                  placeholder="e.g. gemini-1.5-flash"
+                  placeholder="e.g. gemini-2.5-flash"
                   value={tempModel}
                   onChange={(e) => setTempModel(e.target.value)}
                   style={{ marginBottom: '0' }}
@@ -253,7 +253,7 @@ const AICompanion: React.FC = () => {
                   <img src="/assets/images/echo_avatar.png" alt="Echo" className="ai-msg__avatar" />
                   <div className="ai-msg__bubble">
                     <span className="ai-msg__name">Echo</span>
-                    <span>Hello! I'm Echo, your pet care advisor. I've been reviewing {currentPet?.name}'s memories.<br/><br/>Feel free to ask me about pet care tips, or let's reminisce about the precious moments you shared together!</span>
+                    <span>Hello! I'm Echo, your pet care advisor. I've been reviewing {currentPet?.name}'s memories.<br /><br />Feel free to ask me about pet care tips, or let's reminisce about the precious moments you shared together!</span>
                   </div>
                 </div>
               )}
