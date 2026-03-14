@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [windows-latest]
+        platform: [windows-latest, macos-latest]
 
     runs-on: ${{ matrix.platform }}
     
@@ -44,7 +44,7 @@ jobs:
         with:
           projectPath: memory-moon
           tagName: app-v__VERSION__
-          releaseName: "Release v__VERSION__"
+          releaseName: "Pet Memory ${{ matrix.platform }} v__VERSION__"
           releaseBody: "Automated release from CI/CD on main branch."
           releaseDraft: false
           prerelease: false
