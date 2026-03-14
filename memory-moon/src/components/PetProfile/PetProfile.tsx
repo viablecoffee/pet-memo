@@ -8,7 +8,12 @@ const PetProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Pet>(pet);
   const [isGenderOpen, setIsGenderOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const itemsPerPage = 3;
+  const totalPages = Math.ceil(memories.length / itemsPerPage);
 
   const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -220,14 +225,54 @@ const PetProfile: React.FC = () => {
             </div>
             <p className="memories-subtitle">Memory Highlights</p>
             <div className="memories-gallery">
-              {memories.slice(0, 3).map((memory) => (
-                <div key={memory.id} className="memory-highlight-item">
-                  <div className="memory-highlight-placeholder">
-                    <span className="memory-emoji">{memory.emoji}</span>
+              <button 
+                className="gallery-nav gallery-nav--prev"
+                onClick={() => setGalleryIndex(i => (i - 1 + totalPages) % totalPages)}
+              >←</button>
+              
+              {[0, 1, 2].map((offset) => {
+                const memIndex = (galleryIndex * itemsPerPage + offset) % memories.length;
+                const memory = memories[memIndex];
+                const handleClick = () => {
+                  if (!memory.photos?.[0]) return;
+                  if (lastClickedIndex === offset && enlargedImage) {
+                    setEnlargedImage(null);
+                    setLastClickedIndex(null);
+                  } else {
+                    setEnlargedImage(memory.photos[0]);
+                    setLastClickedIndex(offset);
+                  }
+                };
+                return (
+                  <div 
+                    key={`${galleryIndex}-${offset}`} 
+                    className="memory-highlight-item"
+                    onClick={handleClick}
+                  >
+                    {memory.photos && memory.photos.length > 0 ? (
+                      <div className="memory-highlight-img">
+                        <img src={memory.photos[0]} alt={memory.title} />
+                      </div>
+                    ) : (
+                      <div className="memory-highlight-placeholder">
+                        <span className="memory-emoji">{memory.emoji}</span>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
+              
+              <button 
+                className="gallery-nav gallery-nav--next"
+                onClick={() => setGalleryIndex(i => (i + 1) % totalPages)}
+              >→</button>
             </div>
+
+            {enlargedImage && (
+              <div className="image-enlarged" onClick={() => setEnlargedImage(null)}>
+                <img src={enlargedImage} alt="Enlarged" />
+              </div>
+            )}
           </section>
         </main>
       </div>
