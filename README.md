@@ -3,22 +3,23 @@
 At the current stage, the project includes:
 
 - desktop app scaffold with **Tauri + React + TypeScript**
-- initial folder structure and application setup
+- fully functional **3D Space View** using `react-three-fiber` with starfields and moon landscape
 - basic TypeScript models for **Pet** and **Memory**
-- placeholder UI for the application entry
-- dependency preparation for future animation, audio, and visual interaction features
+- state management via **Zustand**
+- **Pet Profile View**: view and edit pet basic info and avatar
+- **Memories timeline**: adding, browsing, and managing memories
+- **Interactive AI Companion** powered by Google Generative AI for emotional comfort
+- ambient **Music Player**
+- automated workflows via GitHub Actions (CI/CD)
 
 ## Not Yet Implemented
 
 The following features are part of the project vision, but are not yet implemented in the current codebase:
 
-- creating and viewing a pet memorial profile
-- adding and browsing memory entries
-- interactive virtual pet companion behaviour
-- emotional interaction and comfort feedback
-- reminder and planning features
+- reminder and planning features (e.g., anniversary notifications)
+- custom space view themes or interactive objects on the moon scene
 
 ## Development Note
 
-This repository currently reflects the **foundation stage** of the project.  
-The README describes the intended product vision, while the existing codebase represents the technical groundwork that will support the MVP.
+This repository has advanced past its **foundation stage**.  
+The current MVP supports core functionalities including profile management, 3D visually immersive environments, and an AI companion.
