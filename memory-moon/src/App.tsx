@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import StarField from './components/StarField/StarField';
 import MoonScene from './components/MoonScene/MoonScene';
@@ -28,10 +28,49 @@ const App: React.FC = () => {
 
     const selectedMemory = memories.find(m => m.id === selectedMemoryId) ?? null;
 
+    const leftPanelRef = useRef<HTMLDivElement>(null);
+    const rightPanelRef = useRef<HTMLDivElement>(null);
+
+    const handleSelectMemory = (id: string) => {
+        selectMemory(id);
+        setShowRightPanel(true);
+    };
+
+    // Smart click-outside: collapse panels when clicking outside
+    useEffect(() => {
+        if (currentView !== 'space') return;
+
+        const handleMouseDown = (e: MouseEvent) => {
+            const target = e.target as Node;
+
+            // Ignore clicks inside panels or their toggle buttons
+            if (leftPanelRef.current?.contains(target)) return;
+            if (rightPanelRef.current?.contains(target)) return;
+
+            // Ignore clicks on topbar or modal overlays
+            const topbar = document.querySelector('.topbar');
+            const modal = document.querySelector('.modal-overlay');
+            if (topbar?.contains(target)) return;
+            if (modal?.contains(target)) return;
+
+            // Priority collapse: if both are open, close right first
+            if (showLeftPanel && showRightPanel) {
+                setShowRightPanel(false);
+            } else if (showRightPanel) {
+                setShowRightPanel(false);
+            } else if (showLeftPanel) {
+                setShowLeftPanel(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleMouseDown);
+        return () => document.removeEventListener('mousedown', handleMouseDown);
+    }, [currentView, showLeftPanel, showRightPanel]);
+
     // Detect mobile/tablet
     useEffect(() => {
         const checkMobile = () => {
-            setIsMobile(window.innerWidth <= 768);
+            setIsMobile(window.innerWidth <= 960);
         };
         checkMobile();
         window.addEventListener('resize', checkMobile);
@@ -51,7 +90,7 @@ const App: React.FC = () => {
             }
         };
 
-    window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mousemove', handleMouseMove);
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, [currentView, isMobile]);
 
@@ -77,12 +116,12 @@ const App: React.FC = () => {
             default:
                 return (
                     <>
-                        <div className={`side-panel side-panel--left ${showLeftPanel ? '' : 'side-panel--hidden'}`}>
+                        <div ref={leftPanelRef} className={`side-panel side-panel--left ${showLeftPanel ? '' : 'side-panel--hidden'}`}>
                             <Timeline
                                 petName={pet.name}
                                 memories={memories}
                                 selectedId={selectedMemoryId}
-                                onSelect={selectMemory}
+                                onSelect={handleSelectMemory}
                                 onAddClick={() => setIsModalOpen(true)}
                             />
                             <button
@@ -93,7 +132,7 @@ const App: React.FC = () => {
                                 {showLeftPanel ? '←' : '→'}
                             </button>
                         </div>
-                        <div className={`side-panel side-panel--right ${showRightPanel ? '' : 'side-panel--hidden'}`}>
+                        <div ref={rightPanelRef} className={`side-panel side-panel--right ${showRightPanel ? '' : 'side-panel--hidden'}`}>
                             <MemoryCard
                                 memory={selectedMemory}
                                 onEdit={setEditingMemory}
@@ -116,7 +155,7 @@ const App: React.FC = () => {
     return (
         <div className={`app ${currentView !== 'space' ? 'app--scrolling' : ''}`}>
             <StarField />
-            <MoonScene />
+            <MoonScene onStarClick={handleSelectMemory} />
             <div className="app-ui">
                 <TopBar
                     isVisible={isMobile || currentView !== 'space' || isTopBarNear || isMusicOpen || isTopBarHovered}
