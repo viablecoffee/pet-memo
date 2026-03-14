@@ -8,7 +8,7 @@ interface MusicPlayerProps {
 }
 
 const MusicPlayer: React.FC<MusicPlayerProps> = ({ isActive }) => {
-  const { isPlaying, setPlaying, tracks, currentTrackId, setCurrentTrack, loopMode, setLoopMode } = useStore();
+  const { isPlaying, setPlaying, tracks, currentTrackId, setCurrentTrack, loopMode, setLoopMode, nextTrack } = useStore();
   const [isPlaylistOpen, setIsPlaylistOpen] = React.useState(false);
   
   const currentTrack = tracks.find(t => t.id === currentTrackId) || tracks[0];
@@ -52,6 +52,21 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isActive }) => {
             <polygon points="5,3 19,12 5,21"/>
           </svg>
         )}
+      </button>
+
+      {/* Next Track */}
+      <button
+        className="player-btn player-next"
+        onClick={() => {
+          nextTrack();
+          if (!isPlaying) setPlaying(true);
+        }}
+        aria-label="Next track"
+      >
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+          <polygon points="5,4 15,12 5,20"/>
+          <rect x="17" y="4" width="2" height="16" rx="1"/>
+        </svg>
       </button>
 
       {/* Track info & Indicators */}
