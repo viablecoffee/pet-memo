@@ -54,7 +54,7 @@ const MoonMesh: React.FC = () => {
     blue: '/assets/images/planet_blue.png'
   }, (tex) => {
     if (Array.isArray(tex)) return;
-    
+
     // Common settings
     const configureTexture = (t: THREE.Texture) => {
       t.anisotropy = 16;
@@ -334,10 +334,16 @@ const MoonScene: React.FC = () => {
           <OrbitControls
             enablePan={false}
             enableZoom={true}
+            enableRotate={true}
+            enableDamping={true}
+            dampingFactor={0.05}
             minDistance={3}
             maxDistance={12}
+            minPolarAngle={0}
+            maxPolarAngle={Math.PI}
             zoomSpeed={0.5}
-            rotateSpeed={0.3}
+            rotateSpeed={0.5}
+            autoRotate={false}
             target={[0, 0, 0]}
           />
         </Suspense>
