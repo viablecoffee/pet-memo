@@ -16,6 +16,7 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
   const [description, setDescription] = useState('');
   const [icon, setIcon] = useState('🐾');
   const [photos, setPhotos] = useState<string[]>([]);
+  const [isClosing, setIsClosing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_PHOTOS = 9;
@@ -62,6 +63,14 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 300);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !description.trim()) return;
@@ -77,18 +86,24 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
     };
 
     addMemory(newMemory);
-    onClose();
-    setTitle('');
-    setDescription('');
-    setPhotos([]);
+
+    // Trigger fade out
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+      setTitle('');
+      setDescription('');
+      setPhotos([]);
+    }, 300);
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content glass-card" onClick={e => e.stopPropagation()}>
+    <div className={`modal-overlay ${isClosing ? 'modal-overlay--closing' : ''}`} onClick={handleClose}>
+      <div className={`modal-content glass-card ${isClosing ? 'modal-content--closing' : ''}`} onClick={e => e.stopPropagation()}>
         <header className="modal-header">
           <h2 className="modal-title">New Memory</h2>
-          <button className="modal-close" onClick={onClose}>&times;</button>
+          <button className="modal-close" onClick={handleClose}>&times;</button>
         </header>
 
         <form id="add-memory-form" className="modal-form" onSubmit={handleSubmit}>

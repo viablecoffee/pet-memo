@@ -17,6 +17,7 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
   const [description, setDescription] = useState(memory?.description || '');
   const [icon, setIcon] = useState(memory?.emoji || '🐾');
   const [photos, setPhotos] = useState<string[]>(memory?.photos || []);
+  const [isClosing, setIsClosing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_PHOTOS = 9;
@@ -69,6 +70,14 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
     }
   };
 
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 300);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !description.trim()) return;
@@ -83,35 +92,41 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
     };
 
     updateMemory(updatedMemory);
-    onClose();
+
+    // Trigger fade out
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 300);
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content glass-card" onClick={e => e.stopPropagation()}>
+    <div className={`modal-overlay ${isClosing ? 'modal-overlay--closing' : ''}`} onClick={handleClose}>
+      <div className={`modal-content glass-card ${isClosing ? 'modal-content--closing' : ''}`} onClick={e => e.stopPropagation()}>
         <header className="modal-header">
           <h2 className="modal-title">Edit Memory</h2>
-          <button className="modal-close" onClick={onClose}>&times;</button>
+          <button className="modal-close" onClick={handleClose}>&times;</button>
         </header>
 
         <form id="edit-memory-form" className="modal-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Date</label>
-            <input 
-              type="date" 
-              value={date} 
-              onChange={e => setDate(e.target.value)} 
+            <input
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
               required
             />
           </div>
 
           <div className="form-group">
             <label>Title</label>
-            <input 
-              type="text" 
-              placeholder="e.g. Adoption Day" 
-              value={title} 
-              onChange={e => setTitle(e.target.value)} 
+            <input
+              type="text"
+              placeholder="e.g. Adoption Day"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
               required
             />
           </div>
@@ -172,10 +187,10 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
 
           <div className="form-group">
             <label>Memory Description <span className="char-count">({description.length}/{MAX_DESC_LENGTH})</span></label>
-            <textarea 
-              rows={4} 
-              placeholder="Write something beautiful..." 
-              value={description} 
+            <textarea
+              rows={4}
+              placeholder="Write something beautiful..."
+              value={description}
               onChange={handleDescriptionChange}
               required
             />
