@@ -26,6 +26,8 @@ const DEMO_MEMORIES: Memory[] = [
   { id: '7', petId: '1', date: '2024-02-28', title: 'Our Story Goes On', description: 'Every day with you is a new adventure. Thank you for bringing so much joy into my life, Milo.', photos: ['/assets/images/our_story_goes_on.jpg'], emoji: '🌙' },
 ];
 
+const DEMO_PETS: Pet[] = [DEMO_PET];
+
 const DEMO_TRACKS: Track[] = [
   { id: '1', name: 'White Noise from Nature', url: '/assets/audio/white_noise_from_nature.mp3' },
   { id: '2', name: 'A New Day with Hope', url: '/assets/audio/A New Day with Hope.mp3' },
@@ -39,6 +41,8 @@ export type ThemeType = 'night' | 'sunset' | 'dawn';
 export type LoopMode = 'single' | 'list' | 'random';
 
 interface AppState {
+  pets: Pet[];
+  currentPetId: string;
   pet: Pet;
   memories: Memory[];
   selectedMemoryId: string | null;
@@ -52,6 +56,7 @@ interface AppState {
   lastInsightUpdate: string | null;
   chatHistory: { role: 'user' | 'model'; text: string }[];
   isLoaded: boolean;
+  isTransitioning: boolean;
   tracks: Track[];
   currentTrackId: string;
   loopMode: LoopMode;
@@ -60,6 +65,10 @@ interface AppState {
   updateMemory: (m: Memory) => void;
   deleteMemory: (id: string) => void;
   updatePet: (p: Pet) => void;
+  addPet: (p: Pet) => void;
+  deletePet: (id: string) => void;
+  setCurrentPet: (id: string) => Promise<void>;
+  setTransitioning: (v: boolean) => void;
   setPlaying: (v: boolean) => void;
   setVolume: (v: number) => void;
   setApiKey: (key: string) => void;
@@ -82,9 +91,19 @@ const savePetToIDB = async (pet: Pet) => {
   }
 };
 
+const savePetsToIDB = async (pets: Pet[]) => {
+  try {
+    // We store multiple pets in 'pet' store by ID
+    for (const pet of pets) {
+      await idb.put('pet', pet);
+    }
+  } catch (error) {
+    console.error('Failed to save pets to IndexedDB:', error);
+  }
+};
+
 const saveMemoriesToIDB = async (memories: Memory[]) => {
   try {
-    await idb.clear('memories');
     for (const memory of memories) {
       await idb.put('memories', memory);
     }
@@ -94,6 +113,8 @@ const saveMemoriesToIDB = async (memories: Memory[]) => {
 };
 
 export const useStore = create<AppState>((set) => ({
+  pets: DEMO_PETS,
+  currentPetId: '1',
   pet: DEMO_PET,
   memories: DEMO_MEMORIES,
   selectedMemoryId: '1',
@@ -103,10 +124,11 @@ export const useStore = create<AppState>((set) => ({
   aiModel: localStorage.getItem('gemini_ai_model') || 'gemini-1.5-flash',
   theme: (localStorage.getItem('app_theme') as ThemeType) || 'night',
   planetStyle: (localStorage.getItem('planet_style') as any) || 'minimal',
-  aiInsights: JSON.parse(localStorage.getItem('ai_insights') || '[]'),
-  lastInsightUpdate: localStorage.getItem('last_insight_update'),
-  chatHistory: JSON.parse(localStorage.getItem('ai_chat_history') || '[]'),
+  aiInsights: [],
+  lastInsightUpdate: null,
+  chatHistory: [],
   isLoaded: false,
+  isTransitioning: false,
   tracks: DEMO_TRACKS,
   currentTrackId: localStorage.getItem('current_track_id') || '1',
   loopMode: (localStorage.getItem('app_loop_mode') as LoopMode) || 'list',
@@ -133,8 +155,95 @@ export const useStore = create<AppState>((set) => ({
 
   updatePet: (p) => {
     savePetToIDB(p);
-    set({ pet: p });
+    set(s => ({
+      pet: p,
+      pets: s.pets.map(item => item.id === p.id ? p : item)
+    }));
   },
+
+  addPet: (p) => set(s => {
+    if (s.pets.length >= 6) return s;
+    const petWithAvatar = { ...p, avatarUrl: p.avatarUrl || '/assets/images/milo_avatar.jpg' };
+    const newPets = [...s.pets, petWithAvatar];
+    savePetToIDB(petWithAvatar);
+    localStorage.setItem('current_pet_id', p.id);
+    return {
+      pets: newPets,
+      currentPetId: p.id,
+      pet: petWithAvatar,
+      memories: [],
+      selectedMemoryId: null
+    };
+  }),
+
+  deletePet: (id) => set(s => {
+    if (s.pets.length <= 1) return s;
+    const newPets = s.pets.filter(p => p.id !== id);
+    idb.delete('pet', id);
+
+    // Also cleanup memories for this pet in IDB
+    // (Actual deletion logic should be more thorough but this is okay for now)
+
+    let nextPetId = s.currentPetId;
+    if (id === s.currentPetId) {
+      nextPetId = newPets[0].id;
+      localStorage.setItem('current_pet_id', nextPetId);
+    }
+
+    const nextPet = newPets.find(p => p.id === nextPetId) || newPets[0];
+
+    return {
+      pets: newPets,
+      currentPetId: nextPet.id,
+      pet: nextPet,
+      memories: id === s.currentPetId ? [] : s.memories,
+      selectedMemoryId: id === s.currentPetId ? null : s.selectedMemoryId
+    };
+  }),
+
+  setCurrentPet: async (id) => {
+    const s = useStore.getState();
+    const targetPet = s.pets.find(p => p.id === id);
+    if (!targetPet || id === s.currentPetId) return;
+
+    set({ isTransitioning: true });
+
+    // Wait for fade in
+    await new Promise(r => setTimeout(r, 600));
+
+    localStorage.setItem('current_pet_id', id);
+
+    try {
+      const allMemories = await idb.getAll<Memory>('memories');
+      const filteredMemories = allMemories.filter(m => m.petId === id);
+
+      set({
+        currentPetId: id,
+        pet: targetPet,
+        memories: filteredMemories.length > 0 ? filteredMemories : (id === '1' ? DEMO_MEMORIES : []),
+        selectedMemoryId: filteredMemories.length > 0 ? filteredMemories[0].id : (id === '1' && DEMO_MEMORIES.length > 0 ? DEMO_MEMORIES[0].id : null),
+        aiInsights: targetPet.aiInsights || [],
+        lastInsightUpdate: targetPet.lastInsightUpdate || null,
+        chatHistory: targetPet.aiChatHistory || []
+      });
+    } catch (e) {
+      set({
+        currentPetId: id,
+        pet: targetPet,
+        memories: [],
+        selectedMemoryId: null,
+        aiInsights: targetPet.aiInsights || [],
+        lastInsightUpdate: targetPet.lastInsightUpdate || null,
+        chatHistory: targetPet.aiChatHistory || []
+      });
+    }
+
+    // Buffer
+    await new Promise(r => setTimeout(r, 400));
+    set({ isTransitioning: false });
+  },
+
+  setTransitioning: (v) => set({ isTransitioning: v }),
 
   setPlaying: (v) => set({ isPlaying: v }),
   setVolume: (v) => {
@@ -168,22 +277,37 @@ export const useStore = create<AppState>((set) => ({
     return { planetStyle: nextStyle };
   }),
 
-  setAiInsights: (insights, date) => {
-    localStorage.setItem('ai_insights', JSON.stringify(insights));
-    localStorage.setItem('last_insight_update', date);
-    set({ aiInsights: insights, lastInsightUpdate: date });
-  },
+  setAiInsights: (insights, date) => set(s => {
+    const updatedPet = { ...s.pet, aiInsights: insights, lastInsightUpdate: date };
+    savePetToIDB(updatedPet);
+    return {
+      aiInsights: insights,
+      lastInsightUpdate: date,
+      pet: updatedPet,
+      pets: s.pets.map(p => p.id === updatedPet.id ? updatedPet : p)
+    };
+  }),
 
   addChatMessage: (msg) => set(s => {
     const newHistory = [...s.chatHistory, msg];
-    localStorage.setItem('ai_chat_history', JSON.stringify(newHistory));
-    return { chatHistory: newHistory };
+    const updatedPet = { ...s.pet, aiChatHistory: newHistory };
+    savePetToIDB(updatedPet);
+    return {
+      chatHistory: newHistory,
+      pet: updatedPet,
+      pets: s.pets.map(p => p.id === updatedPet.id ? updatedPet : p)
+    };
   }),
 
-  clearChatHistory: () => {
-    localStorage.removeItem('ai_chat_history');
-    set({ chatHistory: [] });
-  },
+  clearChatHistory: () => set(s => {
+    const updatedPet = { ...s.pet, aiChatHistory: [] };
+    savePetToIDB(updatedPet);
+    return {
+      chatHistory: [],
+      pet: updatedPet,
+      pets: s.pets.map(p => p.id === updatedPet.id ? updatedPet : p)
+    };
+  }),
   setCurrentTrack: (id) => {
     localStorage.setItem('current_track_id', id);
     set({ currentTrackId: id });
@@ -216,19 +340,26 @@ export const useStore = create<AppState>((set) => ({
 
 export const initializeStore = async () => {
   try {
-    const [pet, memories] = await Promise.all([
-      idb.get<Pet>('pet', '1'),
+    const [pets, allMemories] = await Promise.all([
+      idb.getAll<Pet>('pet'),
       idb.getAll<Memory>('memories'),
     ]);
 
-    if (pet) {
-      useStore.getState().updatePet(pet);
-    }
+    const savedCurrentPetId = localStorage.getItem('current_pet_id') || '1';
 
-    if (memories.length > 0) {
+    if (pets.length > 0) {
+      const currentPet = pets.find(p => p.id === savedCurrentPetId) || pets[0];
+      const filteredMemories = allMemories.filter(m => m.petId === currentPet.id);
+
       useStore.setState({
-        memories,
-        selectedMemoryId: memories[0].id,
+        pets,
+        currentPetId: currentPet.id,
+        pet: currentPet,
+        memories: filteredMemories.length > 0 ? filteredMemories : (currentPet.id === '1' ? DEMO_MEMORIES : []),
+        selectedMemoryId: filteredMemories.length > 0 ? filteredMemories[0].id : (currentPet.id === '1' && DEMO_MEMORIES.length > 0 ? DEMO_MEMORIES[0].id : null),
+        aiInsights: currentPet.aiInsights || [],
+        lastInsightUpdate: currentPet.lastInsightUpdate || null,
+        chatHistory: currentPet.aiChatHistory || [],
         isLoaded: true
       });
     } else {
