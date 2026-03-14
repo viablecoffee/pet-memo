@@ -10,12 +10,12 @@ interface AvatarBuilderProps {
 
 // Default initial state
 const defaultAvatarConfig = {
-  body: 'body-retriever',
-  ears: 'ears-retriever',
-  eyes: 'eyes-puppy',
-  mouth: 'mouth-dog-tongue',
-  accessory: 'acc-none',
-  bodyColor: '#f3c78b', // Light Gold
+  body: 'body-westie',
+  ears: 'ears-westie-stand',
+  eyes: 'eyes-westie-open',
+  mouth: 'mouth-westie-smell',
+  accessory: 'acc-red-bow-2',
+  bodyColor: '#ffffff', // White
 };
 
 const AvatarBuilder: React.FC<AvatarBuilderProps> = ({ isOpen, onClose }) => {
