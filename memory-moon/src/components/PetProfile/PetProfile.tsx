@@ -2,15 +2,20 @@ import React, { useState, useRef } from 'react';
 import './PetProfile.css';
 import { useStore } from '../../store/useStore';
 import type { Pet } from '../../types';
+import AvatarBuilder from '../AvatarBuilder/AvatarBuilder';
 
 const PetProfile: React.FC = () => {
   const { pet, memories, updatePet } = useStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Pet>(pet);
   const [isGenderOpen, setIsGenderOpen] = useState(false);
+  HEAD
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
+
+  const [isAvatarBuilderOpen, setIsAvatarBuilderOpen] = useState(false);
+  33cea74(Refactor avatar builder into pet profile flow)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const itemsPerPage = 3;
   const totalPages = Math.ceil(memories.length / itemsPerPage);
@@ -168,6 +173,19 @@ const PetProfile: React.FC = () => {
     );
   }
 
+  if (isAvatarBuilderOpen) {
+    return (
+      <div className="pet-profile">
+        <div className="pet-profile-frame">
+          <AvatarBuilder
+            isOpen={isAvatarBuilderOpen}
+            onClose={() => setIsAvatarBuilderOpen(false)}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pet-profile">
       <div className="pet-profile-frame">
@@ -183,9 +201,14 @@ const PetProfile: React.FC = () => {
             </div>
             <h2 className="pet-name">{pet.name} 🐾</h2>
             <p className="pet-breed">{pet.breed || 'Pet'}</p>
-            <button className="pet-edit-btn" onClick={() => { setEditForm(pet); setIsEditing(true); }}>
-              ✏️ Edit Profile
-            </button>
+            <div className="pet-actions" style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px' }}>
+              <button className="pet-edit-btn" onClick={() => { setEditForm(pet); setIsEditing(true); }}>
+                ✏️ Edit Profile
+              </button>
+              <button className="pet-edit-btn" onClick={() => setIsAvatarBuilderOpen(true)} style={{ background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)', border: 'none' }}>
+                🎨 Customize Avatar
+              </button>
+            </div>
           </section>
 
           <section className="pet-info-card">
@@ -225,11 +248,11 @@ const PetProfile: React.FC = () => {
             </div>
             <p className="memories-subtitle">Memory Highlights</p>
             <div className="memories-gallery">
-              <button 
+              <button
                 className="gallery-nav gallery-nav--prev"
                 onClick={() => setGalleryIndex(i => (i - 1 + totalPages) % totalPages)}
               >←</button>
-              
+
               {[0, 1, 2].map((offset) => {
                 const memIndex = (galleryIndex * itemsPerPage + offset) % memories.length;
                 const memory = memories[memIndex];
@@ -244,8 +267,8 @@ const PetProfile: React.FC = () => {
                   }
                 };
                 return (
-                  <div 
-                    key={`${galleryIndex}-${offset}`} 
+                  <div
+                    key={`${galleryIndex}-${offset}`}
                     className="memory-highlight-item"
                     onClick={handleClick}
                   >
@@ -261,8 +284,8 @@ const PetProfile: React.FC = () => {
                   </div>
                 );
               })}
-              
-              <button 
+
+              <button
                 className="gallery-nav gallery-nav--next"
                 onClick={() => setGalleryIndex(i => (i + 1) % totalPages)}
               >→</button>
