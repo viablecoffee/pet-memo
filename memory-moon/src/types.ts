@@ -20,6 +20,8 @@ export interface Pet {
   breed?: string;
   weight?: string;
   color?: string;
+  hobbies?: string;
+  favoriteFood?: string;
 }
 
 export interface Track {

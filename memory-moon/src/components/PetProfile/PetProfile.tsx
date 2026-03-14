@@ -175,6 +175,24 @@ const PetProfile: React.FC = () => {
                     placeholder="e.g. Golden"
                   />
                 </div>
+                <div className="edit-form-item full-width">
+                  <label>Hobbies</label>
+                  <input
+                    type="text"
+                    value={editForm.hobbies || ''}
+                    onChange={(e) => setEditForm({ ...editForm, hobbies: e.target.value })}
+                    placeholder="e.g. Running, Swimming"
+                  />
+                </div>
+                <div className="edit-form-item full-width">
+                  <label>Favorite Food</label>
+                  <input
+                    type="text"
+                    value={editForm.favoriteFood || ''}
+                    onChange={(e) => setEditForm({ ...editForm, favoriteFood: e.target.value })}
+                    placeholder="e.g. Beef, Apples"
+                  />
+                </div>
               </div>
               <div className="edit-actions">
                 <button className="edit-cancel-btn" onClick={() => setIsEditing(false)}>
@@ -255,6 +273,14 @@ const PetProfile: React.FC = () => {
               <div className="info-item">
                 <span className="info-label">Color</span>
                 <span className="info-value">{pet.color || 'Not set'}</span>
+              </div>
+              <div className="info-item full-width">
+                <span className="info-label">Hobbies</span>
+                <span className="info-value">{pet.hobbies || 'Not set'}</span>
+              </div>
+              <div className="info-item full-width">
+                <span className="info-label">Favorite Food</span>
+                <span className="info-value">{pet.favoriteFood || 'Not set'}</span>
               </div>
             </div>
           </section>
