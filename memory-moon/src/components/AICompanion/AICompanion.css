@@ -19,8 +19,7 @@
 .ai-companion__frame {
   width: 100%;
   max-width: 1200px;
-  min-height: calc(100vh - 100px);
-  height: auto;
+  height: calc(100vh - 120px);
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 32px;
@@ -273,6 +272,8 @@
   flex-direction: column;
   padding: 0;
   overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 .ai-chat__messages {
@@ -501,7 +502,7 @@
   }
 
   .ai-companion__frame {
-    min-height: calc(100vh - 86px);
+    height: calc(100vh - 86px);
     padding: 16px;
     border-radius: 20px;
   }
@@ -533,13 +534,18 @@
   }
 
   .ai-insights {
-    max-height: 150px;
-    order: 2;
+    height: auto;
+    max-height: 180px;
+    order: 1;
+    /* Move above chat */
+    flex: none;
   }
 
   .ai-chat {
-    min-height: 300px;
-    order: 1;
+    flex: 1;
+    min-height: 250px;
+    order: 2;
+    /* Move below insights */
   }
 
   .ai-suggestions {
