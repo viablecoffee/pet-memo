@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import './PetProfile.css';
 import { useStore } from '../../store/useStore';
 import type { Pet } from '../../types';
@@ -351,14 +351,18 @@ const PetProfile: React.FC = () => {
               onWheel={handleWheel}
               ref={galleryRef}
             >
-              <button
-                className="gallery-nav gallery-nav--prev"
-                onClick={() => handleNavClick('prev')}
-              >←</button>
+              {memories.length > 0 && (
+                <button
+                  className="gallery-nav gallery-nav--prev"
+                  onClick={() => handleNavClick('prev')}
+                >←</button>
+              )}
 
-              {[0, 1, 2].map((offset) => {
+              {memories.length > 0 ? [0, 1, 2].map((offset) => {
                 const memIndex = (galleryIndex * itemsPerPage + offset) % memories.length;
                 const memory = memories[memIndex];
+                if (!memory) return null;
+
                 const handleClick = () => {
                   if (!memory.photos?.[0]) return;
                   if (lastClickedIndex === offset && enlargedImage) {
@@ -386,12 +390,18 @@ const PetProfile: React.FC = () => {
                     )}
                   </div>
                 );
-              })}
+              }) : (
+                <div className="memories-empty-state">
+                  <p>No memories yet. Add your first memory from the Memory Space!</p>
+                </div>
+              )}
 
-              <button
-                className="gallery-nav gallery-nav--next"
-                onClick={() => handleNavClick('next')}
-              >→</button>
+              {memories.length > 0 && (
+                <button
+                  className="gallery-nav gallery-nav--next"
+                  onClick={() => handleNavClick('next')}
+                >→</button>
+              )}
             </div>
 
             {enlargedImage && (

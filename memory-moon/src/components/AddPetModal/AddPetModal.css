@@ -1,0 +1,118 @@
+.pet-modal {
+    max-width: 400px;
+    background: var(--color-bg-card);
+    border: 1px solid rgba(200, 169, 110, 0.2);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.pet-modal .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.pet-modal select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-card-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    color: var(--color-text-primary);
+    font-family: inherit;
+    font-size: 14px;
+    transition: all var(--transition);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23C8A96E' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.pet-modal select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.pet-modal select option {
+    background-color: #1a1a2e;
+    color: white;
+}
+
+.pet-modal .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--color-accent) 0%, #b38f4d 100%);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #1a0b3b;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all var(--transition);
+    box-shadow: 0 4px 15px rgba(200, 169, 110, 0.2);
+}
+
+.pet-modal .submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(200, 169, 110, 0.3);
+    filter: brightness(1.1);
+}
+
+.pet-modal .submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.5);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes scaleDown {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+.fadeOut {
+    animation: fadeOut 0.3s forwards;
+}
+
+.scaleDown {
+    animation: scaleDown 0.3s forwards;
+}

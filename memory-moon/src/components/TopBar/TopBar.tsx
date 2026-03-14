@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './TopBar.css';
 import MusicPlayer from '../MusicPlayer/MusicPlayer';
+import { useStore } from '../../store/useStore';
 
 interface TopBarProps {
   onSearch?: () => void;
@@ -16,15 +17,19 @@ interface TopBarProps {
   activeView?: 'space' | 'profile' | 'ai';
   petAvatar?: string;
   petName?: string;
+  onAddPet?: () => void;
 }
 
 const TopBar: React.FC<TopBarProps> = ({
   onSearch, onSettings, onTogglePlanetStyle, onPetProfile, onAI, onSpace,
   isVisible, isMusicOpen, onMusicToggle, onHoverChange,
-  activeView = 'space', petAvatar, petName
+  activeView = 'space', petAvatar, petName, onAddPet
 }) => {
+  const { pets, currentPetId, setCurrentPet, deletePet } = useStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isPetDropdownOpen, setIsPetDropdownOpen] = useState(false);
   const musicContainerRef = useRef<HTMLDivElement>(null);
+  const profileContainerRef = useRef<HTMLDivElement>(null);
   const mobileMenuContainerRef = useRef<HTMLDivElement>(null);
 
   // Close music player and mobile menu if topbar is hidden
@@ -35,7 +40,25 @@ const TopBar: React.FC<TopBarProps> = ({
     }
   }, [isVisible, onMusicToggle]);
 
-  // Click outside listener for both music player and mobile menu
+  const handlePetSwitch = (id: string) => {
+    setCurrentPet(id);
+    setIsPetDropdownOpen(false);
+  };
+
+  const handleAddPet = () => {
+    setIsPetDropdownOpen(false);
+    onAddPet?.();
+  };
+
+  const handleDeletePet = (e: React.MouseEvent, id: string, name: string) => {
+    e.stopPropagation();
+    const confirmed = window.confirm(`Your pet ${name}'s data will be permanently deleted and cannot be recovered!\nAre you sure you want to delete?`);
+    if (confirmed) {
+      deletePet(id);
+    }
+  };
+
+  // Click outside listener for music, mobile menu and pet dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       // Handle music player
@@ -44,21 +67,24 @@ const TopBar: React.FC<TopBarProps> = ({
       }
       // Handle mobile menu
       if (mobileMenuContainerRef.current && !mobileMenuContainerRef.current.contains(event.target as Node)) {
-        // Important: check if the click target is the menu button itself to avoid double-toggling
         const menuBtn = document.querySelector('.topbar__menu-btn');
         if (menuBtn && !menuBtn.contains(event.target as Node)) {
           setIsMobileMenuOpen(false);
         }
       }
+      // Handle pet dropdown
+      if (profileContainerRef.current && !profileContainerRef.current.contains(event.target as Node)) {
+        setIsPetDropdownOpen(false);
+      }
     };
 
-    if (isMusicOpen || isMobileMenuOpen) {
+    if (isMusicOpen || isMobileMenuOpen || isPetDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isMusicOpen, isMobileMenuOpen, onMusicToggle]);
+  }, [isMusicOpen, isMobileMenuOpen, isPetDropdownOpen, onMusicToggle]);
 
   const handleNavClick = (callback: (() => void) | undefined) => {
     callback?.();
@@ -145,12 +171,60 @@ const TopBar: React.FC<TopBarProps> = ({
           </button>
         </div>
 
-        <div className="topbar__profile">
-          <img src={petAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${petName || 'Milo'}`} alt={petName || 'Milo'} className="topbar__avatar" />
-          <span className="topbar__username">{petName || 'Milo'}</span>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" className="topbar__dropdown-icon">
-            <path d="M7 10l5 5 5-5z" />
-          </svg>
+        <div className="topbar__profile-container" ref={profileContainerRef}>
+          <div
+            className={`topbar__profile ${isPetDropdownOpen ? 'topbar__profile--active' : ''}`}
+            onClick={() => setIsPetDropdownOpen(!isPetDropdownOpen)}
+          >
+            <img
+              src={petAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${petName || 'Milo'}`}
+              alt={petName || 'Milo'}
+              className="topbar__avatar"
+            />
+            <span className="topbar__username">{petName || 'Milo'}</span>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" className={`topbar__dropdown-icon ${isPetDropdownOpen ? 'topbar__dropdown-icon--open' : ''}`}>
+              <path d="M7 10l5 5 5-5z" />
+            </svg>
+          </div>
+
+          <div className={`topbar__pet-dropdown ${isPetDropdownOpen ? 'topbar__pet-dropdown--visible' : ''}`}>
+            <div className="topbar__pet-list">
+              {pets.map(pet => (
+                <div
+                  key={pet.id}
+                  className={`topbar__pet-item ${currentPetId === pet.id ? 'topbar__pet-item--active' : ''}`}
+                  onClick={() => handlePetSwitch(pet.id)}
+                >
+                  <img src={pet.avatarUrl || '/assets/images/milo_avatar.jpg'} alt={pet.name} className="topbar__pet-avatar" />
+                  <span className="topbar__pet-name">{pet.name}</span>
+                  {currentPetId === pet.id && <div className="topbar__pet-active-dot" />}
+
+                  {pets.length > 1 && (
+                    <button
+                      className="topbar__pet-delete-btn"
+                      onClick={(e) => handleDeletePet(e, pet.id, pet.name)}
+                      title="Delete Pet"
+                    >
+                      🗑️
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {pets.length < 6 && (
+              <button
+                className="topbar__add-pet-btn"
+                onClick={() => {
+                  onAddPet?.();
+                  setIsPetDropdownOpen(false);
+                }}
+              >
+                <span className="topbar__add-pet-icon">+</span>
+                Add Pet
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

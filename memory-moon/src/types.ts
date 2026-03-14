@@ -22,6 +22,9 @@ export interface Pet {
   color?: string;
   hobbies?: string;
   favoriteFood?: string;
+  aiChatHistory?: { role: 'user' | 'model'; text: string }[];
+  aiInsights?: { label: string; text: string }[];
+  lastInsightUpdate?: string | null;
 }
 
 export interface Track {
