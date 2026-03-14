@@ -3,5 +3,17 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at 60% 30%, #2a1842 0%, #150b28 40%, #0d0818 100%);
+  transition: background 1.5s ease;
+}
+
+.star-field--night {
+  background: radial-gradient(circle at center, #1b1b3a 0%, #050510 100%);
+}
+
+.star-field--sunset {
+  background: radial-gradient(circle at center, #4b1a3d 0%, #1a0a20 100%);
+}
+
+.star-field--dawn {
+  background: radial-gradient(circle at center, #1a3d5b 0%, #0a1520 100%);
 }

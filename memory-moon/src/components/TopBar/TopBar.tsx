@@ -5,6 +5,7 @@ interface TopBarProps {
   onSearch?: () => void;
   onMusic?: () => void;
   onSettings?: () => void;
+  onTogglePlanetStyle?: () => void;
   onPetProfile?: () => void;
   onAI?: () => void;
   onSpace?: () => void;
@@ -14,7 +15,7 @@ interface TopBarProps {
   petName?: string;
 }
 
-const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetProfile, onAI, onSpace, isVisible, activeView = 'space', petAvatar, petName }) => {
+const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onTogglePlanetStyle, onPetProfile, onAI, onSpace, isVisible, activeView = 'space', petAvatar, petName }) => {
   return (
     <header className={`topbar ${isVisible ? 'topbar--visible' : ''}`}>
       <div className="topbar__left">
@@ -27,19 +28,19 @@ const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetPro
       </div>
 
       <nav className="topbar__nav">
-        <button 
+        <button
           className={`topbar__nav-link ${activeView === 'space' ? 'topbar__nav-link--active' : ''}`}
           onClick={() => activeView !== 'space' && onSpace?.()}
         >
           Memory Space
         </button>
-        <button 
+        <button
           className={`topbar__nav-link ${activeView === 'ai' ? 'topbar__nav-link--active' : ''}`}
           onClick={onAI}
         >
           AI Companion
         </button>
-        <button 
+        <button
           className={`topbar__nav-link ${activeView === 'profile' ? 'topbar__nav-link--active' : ''}`}
           onClick={onPetProfile}
         >
@@ -60,6 +61,11 @@ const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetPro
               <path d="M9 18V5l12-2v13" />
               <circle cx="6" cy="18" r="3" />
               <circle cx="18" cy="16" r="3" />
+            </svg>
+          </button>
+          <button className="topbar__btn" onClick={onTogglePlanetStyle} aria-label="Toggle Planet Style">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           </button>
           <button className="topbar__btn" onClick={onSettings} aria-label="Settings">

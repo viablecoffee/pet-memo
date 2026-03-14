@@ -36,6 +36,8 @@ const DEMO_MEMORIES: Memory[] = [
   { id: '7', petId: '1', date: '2024-02-28', title: 'Final Moments', description: 'You were tired, but your eyes still held so much love. Thank you for everything, Milo.', photos: [], emoji: '🌙' },
 ];
 
+export type ThemeType = 'night' | 'sunset' | 'dawn';
+
 interface AppState {
   pet: Pet;
   memories: Memory[];
@@ -44,6 +46,8 @@ interface AppState {
   volume: number;
   apiKey: string;
   aiModel: string;
+  theme: ThemeType;
+  planetStyle: 'minimal' | 'artistic';
   aiInsights: { label: string; text: string }[];
   lastInsightUpdate: string | null;
   chatHistory: { role: 'user' | 'model'; text: string }[];
@@ -56,6 +60,8 @@ interface AppState {
   setVolume: (v: number) => void;
   setApiKey: (key: string) => void;
   setAiModel: (model: string) => void;
+  cycleTheme: () => void;
+  togglePlanetStyle: () => void;
   setAiInsights: (insights: { label: string; text: string }[], date: string) => void;
   addChatMessage: (msg: { role: 'user' | 'model'; text: string }) => void;
   clearChatHistory: () => void;
@@ -69,6 +75,8 @@ export const useStore = create<AppState>((set) => ({
   volume: 0.7,
   apiKey: localStorage.getItem('gemini_api_key') || '',
   aiModel: localStorage.getItem('gemini_ai_model') || 'gemini-1.5-flash',
+  theme: (localStorage.getItem('app_theme') as ThemeType) || 'night',
+  planetStyle: (localStorage.getItem('planet_style') as any) || 'minimal',
   aiInsights: JSON.parse(localStorage.getItem('ai_insights') || '[]'),
   lastInsightUpdate: localStorage.getItem('last_insight_update'),
   chatHistory: JSON.parse(localStorage.getItem('ai_chat_history') || '[]'),
@@ -103,6 +111,18 @@ export const useStore = create<AppState>((set) => ({
     localStorage.setItem('gemini_ai_model', model);
     set({ aiModel: model });
   },
+  cycleTheme: () => set(s => {
+    const themes: ThemeType[] = ['night', 'sunset', 'dawn'];
+    const currentIndex = themes.indexOf(s.theme);
+    const nextTheme = themes[(currentIndex + 1) % themes.length];
+    localStorage.setItem('app_theme', nextTheme);
+    return { theme: nextTheme };
+  }),
+  togglePlanetStyle: () => set(s => {
+    const nextStyle = s.planetStyle === 'minimal' ? 'artistic' : 'minimal';
+    localStorage.setItem('planet_style', nextStyle);
+    return { planetStyle: nextStyle };
+  }),
   setAiInsights: (insights, date) => {
     localStorage.setItem('ai_insights', JSON.stringify(insights));
     localStorage.setItem('last_insight_update', date);

@@ -1,23 +1,43 @@
 import React, { Suspense, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Sphere, MeshDistortMaterial, Stars, OrbitControls, Billboard } from '@react-three/drei';
+import { Sphere, MeshDistortMaterial, Stars, OrbitControls, Billboard, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import './MoonScene.css';
 import { useStore } from '../../store/useStore';
 
 // Moon mesh - now rotates with the group
 const MoonMesh: React.FC = () => {
+  const { planetStyle } = useStore();
+
+  // Load texture for artistic mode
+  const textures = useTexture({
+    artistic: '/assets/images/artistic_moon_v2.png'
+  }, (tex) => {
+    if (Array.isArray(tex)) return;
+    tex.artistic.anisotropy = 16;
+  });
+
   return (
     <Sphere args={[1.8, 64, 64]}>
-      <MeshDistortMaterial
-        color="#c8a96e"
-        roughness={0.85}
-        metalness={0.12}
-        distort={0.12}
-        speed={0.8}
-        emissive="#5c3d1a"
-        emissiveIntensity={0.15}
-      />
+      {planetStyle === 'minimal' ? (
+        <MeshDistortMaterial
+          color="#c8a96e"
+          roughness={0.85}
+          metalness={0.12}
+          distort={0.12}
+          speed={0.8}
+          emissive="#5c3d1a"
+          emissiveIntensity={0.15}
+        />
+      ) : (
+        <meshStandardMaterial
+          map={textures.artistic}
+          roughness={1}
+          metalness={0}
+          emissive="#ffffff"
+          emissiveIntensity={0.08}
+        />
+      )}
     </Sphere>
   );
 };
@@ -180,30 +200,62 @@ const MoonSystem: React.FC = () => {
 };
 
 const MoonScene: React.FC = () => {
-  const { selectMemory } = useStore();
+  const { theme, selectMemory } = useStore();
+
+  const themeConfig = useMemo(() => {
+    switch (theme) {
+      case 'sunset':
+        return {
+          ambient: 0.4,
+          dirIntensity: 1.5,
+          dirColor: "#ffaa33",
+          pointIntensity: 0.6,
+          pointColor: "#ff4400",
+          bgClass: "moon-scene--sunset"
+        };
+      case 'dawn':
+        return {
+          ambient: 0.5,
+          dirIntensity: 1.0,
+          dirColor: "#80ccff",
+          pointIntensity: 0.3,
+          pointColor: "#ffffff",
+          bgClass: "moon-scene--dawn"
+        };
+      default: // night
+        return {
+          ambient: 0.3,
+          dirIntensity: 1.2,
+          dirColor: "#ffe8c0",
+          pointIntensity: 0.4,
+          pointColor: "#8040ff",
+          bgClass: "moon-scene--night"
+        };
+    }
+  }, [theme]);
 
   return (
-    <div className="moon-scene">
+    <div className={`moon-scene ${themeConfig.bgClass}`}>
       <Canvas
         camera={{ position: [0, 0, 6], fov: 50 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent' }}
         onPointerMissed={() => selectMemory(null)}
       >
-        <ambientLight intensity={0.3} />
-        <directionalLight position={[5, 3, 5]} intensity={1.2} color="#ffe8c0" />
-        <pointLight position={[-4, -2, 3]} intensity={0.4} color="#8040ff" />
+        <ambientLight intensity={themeConfig.ambient} />
+        <directionalLight position={[5, 3, 5]} intensity={themeConfig.dirIntensity} color={themeConfig.dirColor} />
+        <pointLight position={[-4, -2, 3]} intensity={themeConfig.pointIntensity} color={themeConfig.pointColor} />
 
         <Suspense fallback={null}>
           <MoonSystem />
           <Stars
             radius={30}
             depth={20}
-            count={800}
+            count={theme === 'night' ? 800 : theme === 'sunset' ? 400 : 300}
             factor={2}
-            saturation={0.2}
+            saturation={theme === 'night' ? 0.2 : 0.4}
             fade
-            speed={0.3}
+            speed={theme === 'night' ? 0.3 : 0.15}
           />
           <OrbitControls
             enablePan={false}
