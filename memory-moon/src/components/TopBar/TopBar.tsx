@@ -110,7 +110,7 @@ const TopBar: React.FC<TopBarProps> = ({
 
       <div className="topbar__right">
         <div className="topbar__actions">
-          <button className="topbar__btn" onClick={onSearch} aria-label="Search">
+          <button className="topbar__btn" onClick={onSearch} aria-label="Search" style={{ display: 'none' }}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="7" />
               <line x1="16.5" y1="16.5" x2="22" y2="22" />
