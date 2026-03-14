@@ -254,6 +254,84 @@ const MemoryStar: React.FC<{
   );
 };
 
+interface PlanetProps {
+  size: number;
+  color: string;
+  orbitRadius: number;
+  orbitSpeed: number;
+  orbitTilt?: number;
+  emissive?: string;
+  emissiveIntensity?: number;
+  hasRing?: boolean;
+  ringColor?: string;
+}
+
+const Planet: React.FC<PlanetProps> = ({ size, color, orbitRadius, orbitSpeed, orbitTilt = 0, emissive, emissiveIntensity = 0, hasRing, ringColor }) => {
+  const groupRef = useRef<THREE.Group>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
+  const texture = useTexture('/assets/images/planet_blue.png');
+
+  useFrame(({ clock }) => {
+    if (groupRef.current) {
+      const t = clock.getElapsedTime() * orbitSpeed;
+      groupRef.current.position.x = Math.cos(t) * orbitRadius;
+      groupRef.current.position.z = Math.sin(t) * orbitRadius;
+      groupRef.current.position.y = Math.sin(t * 0.5 + orbitTilt) * orbitRadius * 0.3;
+    }
+    if (meshRef.current) {
+      meshRef.current.rotation.y += 0.001;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      <mesh ref={meshRef}>
+        <sphereGeometry args={[size, 32, 32]} />
+        <meshStandardMaterial
+          map={texture}
+          color={color}
+          roughness={0.8}
+          metalness={0.1}
+          emissive={emissive || color}
+          emissiveIntensity={emissiveIntensity}
+        />
+      </mesh>
+      {hasRing && (
+        <mesh rotation={[Math.PI / 2.5, 0, 0]}>
+          <ringGeometry args={[size * 1.4, size * 2.2, 32]} />
+          <meshStandardMaterial
+            color={ringColor || '#c9a86c'}
+            transparent
+            opacity={0.6}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      )}
+    </group>
+  );
+};
+
+const SolarSystem: React.FC = () => {
+  return (
+    <>
+      {/* Mercury - gray */}
+      <Planet size={0.3} color="#a0a0a0" orbitRadius={18} orbitSpeed={0.04} orbitTilt={0.5} emissiveIntensity={0.05} />
+      {/* Venus - yellowish white */}
+      <Planet size={0.4} color="#e6d9b8" orbitRadius={24} orbitSpeed={0.03} orbitTilt={1.2} emissiveIntensity={0.1} />
+      
+      {/* Earth-like - the "Earth" (current planet) */}
+      <Planet size={0.5} color="#4a90c2" orbitRadius={32} orbitSpeed={0.02} orbitTilt={2.5} emissive="#2a6090" emissiveIntensity={0.15} />
+      
+      {/* Jupiter - orange-brown */}
+      <Planet size={0.9} color="#c9a86c" orbitRadius={42} orbitSpeed={0.015} orbitTilt={0.8} emissiveIntensity={0.1} hasRing ringColor="#b8956c" />
+      {/* Saturn - golden yellow */}
+      <Planet size={0.75} color="#e8d5a3" orbitRadius={52} orbitSpeed={0.01} orbitTilt={3.2} hasRing ringColor="#c9b896" />
+      {/* Uranus - cyan-blue */}
+      <Planet size={0.55} color="#7fd0d0" orbitRadius={65} orbitSpeed={0.008} orbitTilt={1.8} emissive="#4aa0a0" emissiveIntensity={0.2} />
+    </>
+  );
+};
+
 const MoonSystem: React.FC = () => {
   const groupRef = useRef<THREE.Group>(null);
 
@@ -269,6 +347,7 @@ const MoonSystem: React.FC = () => {
       <OrbitRing />
       <OrbitRing2 />
       <MemoryStars />
+      <SolarSystem />
     </group>
   );
 };
