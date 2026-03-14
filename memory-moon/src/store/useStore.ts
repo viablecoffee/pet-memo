@@ -11,6 +11,8 @@ const DEMO_PET: Pet = {
   birthDate: '2018-06-12',
   color: 'Golden',
   weight: '25 kg',
+  hobbies: 'Running, Swimming, Chasing balls',
+  favoriteFood: 'Beef jerky, Chicken breast, Apples',
 };
 
 const DEMO_MEMORIES: Memory[] = [
