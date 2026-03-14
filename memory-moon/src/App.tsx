@@ -21,11 +21,24 @@ const App: React.FC = () => {
     const [editingMemory, setEditingMemory] = useState<Memory | null>(null);
     const [currentView, setCurrentView] = useState<ViewType>('space');
     const [isTopBarNear, setIsTopBarNear] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
     const selectedMemory = memories.find(m => m.id === selectedMemoryId) ?? null;
 
+    // Detect mobile/tablet
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     // Mouse proximity detector for TopBar
     useEffect(() => {
+        if (isMobile) return;
+        
         const handleMouseMove = (e: MouseEvent) => {
             if (currentView !== 'space') return;
             if (e.clientY < 60) {
@@ -37,7 +50,7 @@ const App: React.FC = () => {
 
         window.addEventListener('mousemove', handleMouseMove);
         return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, [currentView]);
+    }, [currentView, isMobile]);
 
     const renderMainContent = () => {
         switch (currentView) {
@@ -71,7 +84,7 @@ const App: React.FC = () => {
             <MoonScene />
             <div className="app-ui">
                 <TopBar
-                    isVisible={currentView !== 'space' || isTopBarNear}
+                    isVisible={isMobile || currentView !== 'space' || isTopBarNear}
                     onSpace={() => setCurrentView('space')}
                     onPetProfile={() => setCurrentView(currentView === 'profile' ? 'space' : 'profile')}
                     onAI={() => setCurrentView(currentView === 'ai' ? 'space' : 'ai')}
