@@ -203,10 +203,13 @@
 }
 
 .memories-header {
+  margin-bottom: 2px;
+}
+
+.memories-title-group {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
+  gap: 12px;
 }
 
 .memories-header .section-title {
@@ -222,7 +225,7 @@
 .memories-subtitle {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.5);
-  margin: 0 0 20px 0;
+  margin: 0 0 16px 0;
 }
 
 .memories-gallery {
@@ -715,7 +718,7 @@
   }
 
   .info-value {
-    text-align: left;
+    text-align: right;
     width: 100%;
   }
 
@@ -754,19 +757,26 @@
   }
 
   .memories-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
+  }
+
+  .memories-title-group {
+    flex-wrap: wrap;
+    gap: 6px 12px;
   }
 
   .memories-count {
     font-size: 13px;
+    opacity: 0.9;
   }
 
   .section-title {
     font-size: 13px;
-    margin-bottom: 16px;
+    margin-bottom: 0px !important;
+  }
+
+  .memories-subtitle {
+    margin-bottom: 12px;
   }
 
   .memories-gallery {

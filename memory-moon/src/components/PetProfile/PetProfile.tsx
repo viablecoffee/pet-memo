@@ -463,8 +463,10 @@ const PetProfile: React.FC = () => {
 
           <section className="memories-section">
             <div className="memories-header">
-              <h3 className="section-title">⭐ Total Memories</h3>
-              <span className="memories-count">{memories.length} Memories</span>
+              <div className="memories-title-group">
+                <h3 className="section-title">⭐ Total Memories</h3>
+                <span className="memories-count">{memories.length} Memories</span>
+              </div>
             </div>
             <p className="memories-subtitle">Memory Highlights</p>
             <div
@@ -538,14 +540,14 @@ const PetProfile: React.FC = () => {
               )}
             </div>
 
-            {enlargedImage && (
-              <div className="image-enlarged" onClick={() => setEnlargedImage(null)}>
-                <img src={enlargedImage} alt="Enlarged" />
-              </div>
-            )}
           </section>
         </main>
       </div>
+      {enlargedImage && (
+        <div className="image-enlarged" onClick={() => setEnlargedImage(null)}>
+          <img src={enlargedImage} alt="Enlarged" />
+        </div>
+      )}
     </div>
   );
 };
