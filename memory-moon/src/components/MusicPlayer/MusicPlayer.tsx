@@ -167,7 +167,10 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isActive }) => {
         </button>
 
         {isPlaylistOpen && (
-          <div className="playlist-popup glass-card">
+          <div 
+            className="playlist-popup glass-card"
+            onMouseLeave={() => setIsPlaylistOpen(false)}
+          >
             <header className="playlist-header">
               <span>Cloud Playlist</span>
             </header>
