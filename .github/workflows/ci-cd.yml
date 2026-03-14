@@ -43,8 +43,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: memory-moon
-          tagName: app-v__VERSION__ # tauri-action will replace __VERSION__ with the version from tauri.conf.json
+          tagName: app-v__VERSION__
           releaseName: "Release v__VERSION__"
           releaseBody: "Automated release from CI/CD on main branch."
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
