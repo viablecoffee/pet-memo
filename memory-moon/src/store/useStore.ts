@@ -47,7 +47,7 @@ interface AppState {
   apiKey: string;
   aiModel: string;
   theme: ThemeType;
-  planetStyle: 'minimal' | 'artistic';
+  planetStyle: 'minimal' | 'artistic' | 'green' | 'blue';
   aiInsights: { label: string; text: string }[];
   lastInsightUpdate: string | null;
   chatHistory: { role: 'user' | 'model'; text: string }[];
@@ -119,7 +119,9 @@ export const useStore = create<AppState>((set) => ({
     return { theme: nextTheme };
   }),
   togglePlanetStyle: () => set(s => {
-    const nextStyle = s.planetStyle === 'minimal' ? 'artistic' : 'minimal';
+    const styles: ('minimal' | 'artistic' | 'green' | 'blue')[] = ['minimal', 'artistic', 'green', 'blue'];
+    const currentIndex = styles.indexOf(s.planetStyle);
+    const nextStyle = styles[(currentIndex + 1) % styles.length];
     localStorage.setItem('planet_style', nextStyle);
     return { planetStyle: nextStyle };
   }),

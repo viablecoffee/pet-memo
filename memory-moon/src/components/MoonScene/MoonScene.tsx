@@ -9,12 +9,16 @@ import { useStore } from '../../store/useStore';
 const MoonMesh: React.FC = () => {
   const { planetStyle } = useStore();
 
-  // Load texture for artistic mode
+  // Load textures
   const textures = useTexture({
-    artistic: '/assets/images/artistic_moon_v2.png'
+    artistic: '/assets/images/artistic_moon_v2.png',
+    green: '/assets/images/planet_green.png',
+    blue: '/assets/images/planet_blue.png'
   }, (tex) => {
     if (Array.isArray(tex)) return;
     tex.artistic.anisotropy = 16;
+    if (tex.green) tex.green.anisotropy = 16;
+    if (tex.blue) tex.blue.anisotropy = 16;
   });
 
   return (
@@ -29,13 +33,29 @@ const MoonMesh: React.FC = () => {
           emissive="#5c3d1a"
           emissiveIntensity={0.15}
         />
-      ) : (
+      ) : planetStyle === 'artistic' ? (
         <meshStandardMaterial
           map={textures.artistic}
           roughness={1}
           metalness={0}
           emissive="#ffffff"
           emissiveIntensity={0.08}
+        />
+      ) : planetStyle === 'green' ? (
+        <meshStandardMaterial
+          map={textures.green}
+          roughness={0.8}
+          metalness={0.1}
+          emissive="#ffffff"
+          emissiveIntensity={0.03}
+        />
+      ) : (
+        <meshStandardMaterial
+          map={textures.blue}
+          roughness={0.7}
+          metalness={0.2}
+          emissive="#7fbfff"
+          emissiveIntensity={0.05}
         />
       )}
     </Sphere>
