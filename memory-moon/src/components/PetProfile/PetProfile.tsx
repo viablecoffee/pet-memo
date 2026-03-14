@@ -7,6 +7,7 @@ const PetProfile: React.FC = () => {
   const { pet, memories, updatePet } = useStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Pet>(pet);
+  const [isGenderOpen, setIsGenderOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,10 +34,16 @@ const PetProfile: React.FC = () => {
     return `${m}/${d}/${y}`;
   };
 
+  const genderOptions = [
+    { value: '', label: 'Not set' },
+    { value: 'male', label: '♂ Male' },
+    { value: 'female', label: '♀ Female' }
+  ];
+
   if (isEditing) {
     return (
-      <div className="pet-profile">
-        <div className="pet-profile-frame">
+      <div className="pet-profile" onClick={() => setIsGenderOpen(false)}>
+        <div className="pet-profile-frame" onClick={(e) => e.stopPropagation()}>
           <main className="pet-profile-main">
             <section className="pet-identity">
               <div className="pet-avatar-wrapper pet-avatar-wrapper--editing" onClick={() => fileInputRef.current?.click()}>
@@ -79,14 +86,31 @@ const PetProfile: React.FC = () => {
                 </div>
                 <div className="edit-form-item">
                   <label>Gender</label>
-                  <select
-                    value={editForm.gender || ''}
-                    onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
-                  >
-                    <option value="">Not set</option>
-                    <option value="male">♂ Male</option>
-                    <option value="female">♀ Female</option>
-                  </select>
+                  <div className="custom-dropdown">
+                    <div
+                      className={`dropdown-trigger ${isGenderOpen ? 'dropdown-trigger--open' : ''}`}
+                      onClick={() => setIsGenderOpen(!isGenderOpen)}
+                    >
+                      {genderOptions.find(o => o.value === editForm.gender)?.label || 'Not set'}
+                      <span className="dropdown-arrow">▼</span>
+                    </div>
+                    {isGenderOpen && (
+                      <div className="dropdown-options">
+                        {genderOptions.map(option => (
+                          <div
+                            key={option.value}
+                            className={`dropdown-option ${editForm.gender === option.value ? 'dropdown-option--selected' : ''}`}
+                            onClick={() => {
+                              setEditForm({ ...editForm, gender: option.value });
+                              setIsGenderOpen(false);
+                            }}
+                          >
+                            {option.label}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="edit-form-item">
                   <label>Birthday</label>
