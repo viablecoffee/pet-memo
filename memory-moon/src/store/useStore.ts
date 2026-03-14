@@ -113,7 +113,7 @@ export const useStore = create<AppState>((set) => ({
   apiKey: localStorage.getItem('gemini_api_key') || '',
   aiModel: localStorage.getItem('gemini_ai_model') || 'gemini-1.5-flash',
   theme: (localStorage.getItem('app_theme') as ThemeType) || 'night',
-  planetStyle: (localStorage.getItem('planet_style') as any) || 'minimal',
+  planetStyle: (localStorage.getItem('planet_style') as any) || 'blue',
   aiInsights: [],
   lastInsightUpdate: null,
   chatHistory: [],
