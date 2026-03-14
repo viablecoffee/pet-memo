@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Memory, Pet } from '../types';
+import type { Memory, Pet, Track } from '../types';
 import idb from './idb';
 
 const DEMO_PET: Pet = {
@@ -23,6 +23,11 @@ const DEMO_MEMORIES: Memory[] = [
   { id: '7', petId: '1', date: '2024-02-28', title: 'Final Moments', description: 'You were tired, but your eyes still held so much love. Thank you for everything, Milo.', photos: [], emoji: '🌙' },
 ];
 
+const DEMO_TRACKS: Track[] = [
+  { id: '1', name: 'Nature White Noise', url: '/assets/audio/white_noise_from_nature.mp3' },
+  { id: '2', name: 'A New Day with Hope', url: '/assets/audio/A New Day with Hope.mp3' },
+];
+
 export type ThemeType = 'night' | 'sunset' | 'dawn';
 
 interface AppState {
@@ -39,6 +44,8 @@ interface AppState {
   lastInsightUpdate: string | null;
   chatHistory: { role: 'user' | 'model'; text: string }[];
   isLoaded: boolean;
+  tracks: Track[];
+  currentTrackId: string;
   selectMemory: (id: string | null) => void;
   addMemory: (m: Memory) => void;
   updateMemory: (m: Memory) => void;
@@ -53,6 +60,7 @@ interface AppState {
   setAiInsights: (insights: { label: string; text: string }[], date: string) => void;
   addChatMessage: (msg: { role: 'user' | 'model'; text: string }) => void;
   clearChatHistory: () => void;
+  setCurrentTrack: (id: string) => void;
 }
 
 const savePetToIDB = async (pet: Pet) => {
@@ -79,7 +87,7 @@ export const useStore = create<AppState>((set) => ({
   memories: DEMO_MEMORIES,
   selectedMemoryId: '1',
   isPlaying: false,
-  volume: 0.7,
+  volume: parseFloat(localStorage.getItem('app_volume') || '0.7'),
   apiKey: localStorage.getItem('gemini_api_key') || '',
   aiModel: localStorage.getItem('gemini_ai_model') || 'gemini-1.5-flash',
   theme: (localStorage.getItem('app_theme') as ThemeType) || 'night',
@@ -88,6 +96,8 @@ export const useStore = create<AppState>((set) => ({
   lastInsightUpdate: localStorage.getItem('last_insight_update'),
   chatHistory: JSON.parse(localStorage.getItem('ai_chat_history') || '[]'),
   isLoaded: false,
+  tracks: DEMO_TRACKS,
+  currentTrackId: localStorage.getItem('current_track_id') || '1',
 
   selectMemory: (id) => set({ selectedMemoryId: id }),
 
@@ -115,7 +125,10 @@ export const useStore = create<AppState>((set) => ({
   },
 
   setPlaying: (v) => set({ isPlaying: v }),
-  setVolume: (v) => set({ volume: v }),
+  setVolume: (v) => {
+    localStorage.setItem('app_volume', v.toString());
+    set({ volume: v });
+  },
 
   setApiKey: (key) => {
     localStorage.setItem('gemini_api_key', key);
@@ -158,6 +171,10 @@ export const useStore = create<AppState>((set) => ({
   clearChatHistory: () => {
     localStorage.removeItem('ai_chat_history');
     set({ chatHistory: [] });
+  },
+  setCurrentTrack: (id) => {
+    localStorage.setItem('current_track_id', id);
+    set({ currentTrackId: id });
   },
 }));
 

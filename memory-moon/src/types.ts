@@ -21,3 +21,9 @@ export interface Pet {
   weight?: string;
   color?: string;
 }
+
+export interface Track {
+  id: string;
+  name: string;
+  url: string;
+}
