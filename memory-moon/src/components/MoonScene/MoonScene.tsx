@@ -128,11 +128,12 @@ const OrbitRing2: React.FC = () => {
 };
 
 // Star dots around moon - each memory has a corresponding star
-const MemoryStars: React.FC = () => {
+const MemoryStars: React.FC<{ onStarClick?: (id: string) => void }> = ({ onStarClick }) => {
   const { memories, selectedMemoryId, selectMemory } = useStore();
 
   const handleClick = (id: string) => {
     selectMemory(id);
+    onStarClick?.(id);
   };
 
   const sortedMemories = [...memories].sort((a, b) =>
@@ -318,10 +319,10 @@ const SolarSystem: React.FC = () => {
       <Planet size={0.3} color="#a0a0a0" orbitRadius={18} orbitSpeed={0.04} orbitTilt={0.5} emissiveIntensity={0.05} />
       {/* Venus - yellowish white */}
       <Planet size={0.4} color="#e6d9b8" orbitRadius={24} orbitSpeed={0.03} orbitTilt={1.2} emissiveIntensity={0.1} />
-      
+
       {/* Earth-like - the "Earth" (current planet) */}
       <Planet size={0.5} color="#4a90c2" orbitRadius={32} orbitSpeed={0.02} orbitTilt={2.5} emissive="#2a6090" emissiveIntensity={0.15} />
-      
+
       {/* Jupiter - orange-brown */}
       <Planet size={0.9} color="#c9a86c" orbitRadius={42} orbitSpeed={0.015} orbitTilt={0.8} emissiveIntensity={0.1} hasRing ringColor="#b8956c" />
       {/* Saturn - golden yellow */}
@@ -332,7 +333,7 @@ const SolarSystem: React.FC = () => {
   );
 };
 
-const MoonSystem: React.FC = () => {
+const MoonSystem: React.FC<{ onStarClick?: (id: string) => void }> = ({ onStarClick }) => {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame(({ clock }) => {
@@ -346,13 +347,17 @@ const MoonSystem: React.FC = () => {
       <MoonMesh />
       <OrbitRing />
       <OrbitRing2 />
-      <MemoryStars />
+      <MemoryStars onStarClick={onStarClick} />
       <SolarSystem />
     </group>
   );
 };
 
-const MoonScene: React.FC = () => {
+interface MoonSceneProps {
+  onStarClick?: (id: string) => void;
+}
+
+const MoonScene: React.FC<MoonSceneProps> = ({ onStarClick }) => {
   const { theme, selectMemory } = useStore();
 
   const themeConfig = useMemo(() => {
@@ -400,7 +405,7 @@ const MoonScene: React.FC = () => {
         <pointLight position={[-4, -2, 3]} intensity={themeConfig.pointIntensity} color={themeConfig.pointColor} />
 
         <Suspense fallback={null}>
-          <MoonSystem />
+          <MoonSystem onStarClick={onStarClick} />
           <Stars
             radius={30}
             depth={20}

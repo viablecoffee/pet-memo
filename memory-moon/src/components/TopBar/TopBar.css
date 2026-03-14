@@ -249,8 +249,15 @@
   border-left: 3px solid var(--color-accent);
 }
 
-/* Responsive: Tablet */
-@media (max-width: 768px) {
+/* Responsive: Intermediate — hide brand name but keep nav links */
+@media (max-width: 1060px) {
+  .topbar__brand-name {
+    display: none;
+  }
+}
+
+/* Responsive: Tablet — switch to hamburger menu */
+@media (max-width: 960px) {
   .topbar {
     padding: 0 16px;
     height: 56px;
