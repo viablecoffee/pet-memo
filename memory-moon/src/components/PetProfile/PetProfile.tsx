@@ -10,13 +10,33 @@ const PetProfile: React.FC = () => {
   const [editForm, setEditForm] = useState<Pet>(pet);
   const [isGenderOpen, setIsGenderOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [galleryKey, setGalleryKey] = useState(0);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
 
   const [isAvatarBuilderOpen, setIsAvatarBuilderOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = 3;
   const totalPages = Math.ceil(memories.length / itemsPerPage);
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (e.deltaY > 0) {
+      setGalleryIndex(i => (i + 1) % totalPages);
+    } else if (e.deltaY < 0) {
+      setGalleryIndex(i => (i - 1 + totalPages) % totalPages);
+    }
+    setGalleryKey(k => k + 1);
+  };
+
+  const handleNavClick = (direction: 'prev' | 'next') => {
+    if (direction === 'next') {
+      setGalleryIndex(i => (i + 1) % totalPages);
+    } else {
+      setGalleryIndex(i => (i - 1 + totalPages) % totalPages);
+    }
+    setGalleryKey(k => k + 1);
+  };
 
   const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -245,10 +265,14 @@ const PetProfile: React.FC = () => {
               <span className="memories-count">{memories.length} Memories</span>
             </div>
             <p className="memories-subtitle">Memory Highlights</p>
-            <div className="memories-gallery">
+            <div 
+              className="memories-gallery"
+              onWheel={handleWheel}
+              ref={galleryRef}
+            >
               <button
                 className="gallery-nav gallery-nav--prev"
-                onClick={() => setGalleryIndex(i => (i - 1 + totalPages) % totalPages)}
+                onClick={() => handleNavClick('prev')}
               >←</button>
 
               {[0, 1, 2].map((offset) => {
@@ -266,7 +290,7 @@ const PetProfile: React.FC = () => {
                 };
                 return (
                   <div
-                    key={`${galleryIndex}-${offset}`}
+                    key={`${galleryKey}-${offset}`}
                     className="memory-highlight-item"
                     onClick={handleClick}
                   >
@@ -285,7 +309,7 @@ const PetProfile: React.FC = () => {
 
               <button
                 className="gallery-nav gallery-nav--next"
-                onClick={() => setGalleryIndex(i => (i + 1) % totalPages)}
+                onClick={() => handleNavClick('next')}
               >→</button>
             </div>
 

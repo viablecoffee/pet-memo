@@ -208,6 +208,7 @@
   display: flex;
   gap: 12px;
   align-items: center;
+  perspective: 1000px;
 }
 
 .gallery-nav {
@@ -224,6 +225,7 @@
   justify-content: center;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  z-index: 2;
 }
 
 .gallery-nav:hover {
@@ -234,6 +236,38 @@
 .memory-highlight-item {
   flex: 1;
   cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
+  transform-style: preserve-3d;
+  animation: gallerySlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes gallerySlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.memory-highlight-item:hover {
+  transform: scale(1.05);
+}
+
+.memory-highlight-img {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 163, 115, 0.2);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.memory-highlight-item:hover .memory-highlight-img {
+  border-color: rgba(212, 163, 115, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .memory-highlight-img {
