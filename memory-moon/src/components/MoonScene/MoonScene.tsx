@@ -327,12 +327,19 @@ const SolarSystem: React.FC = () => {
       {/* Earth-like - the "Earth" (current planet) */}
       <Planet size={0.5} color="#4a90c2" orbitRadius={32} orbitSpeed={0.02} orbitTilt={2.5} emissive="#2a6090" emissiveIntensity={0.15} />
 
+      {/* Mars - rusty red */}
+      <Planet size={0.35} color="#c1440e" orbitRadius={37} orbitSpeed={0.018} orbitTilt={1.9} emissiveIntensity={0.15} />
+
       {/* Jupiter - orange-brown */}
       <Planet size={0.9} color="#c9a86c" orbitRadius={42} orbitSpeed={0.015} orbitTilt={0.8} emissiveIntensity={0.1} hasRing ringColor="#b8956c" />
       {/* Saturn - golden yellow */}
       <Planet size={0.75} color="#e8d5a3" orbitRadius={52} orbitSpeed={0.01} orbitTilt={3.2} hasRing ringColor="#c9b896" />
       {/* Uranus - cyan-blue */}
       <Planet size={0.55} color="#7fd0d0" orbitRadius={65} orbitSpeed={0.008} orbitTilt={1.8} emissive="#4aa0a0" emissiveIntensity={0.2} />
+      {/* Neptune - deep blue */}
+      <Planet size={0.52} color="#4b70dd" orbitRadius={75} orbitSpeed={0.006} orbitTilt={2.1} emissive="#2a4090" emissiveIntensity={0.2} />
+      {/* Pluto - brownish gray */}
+      <Planet size={0.15} color="#d4a574" orbitRadius={85} orbitSpeed={0.004} orbitTilt={2.8} emissiveIntensity={0.1} />
     </>
   );
 };
