@@ -5,7 +5,6 @@ import MoonScene from './components/MoonScene/MoonScene';
 import TopBar from './components/TopBar/TopBar';
 import Timeline from './components/Timeline/Timeline';
 import MemoryCard from './components/MemoryCard/MemoryCard';
-import MusicPlayer from './components/MusicPlayer/MusicPlayer';
 import AddMemoryModal from './components/AddMemoryModal/AddMemoryModal';
 import EditMemoryModal from './components/EditMemoryModal/EditMemoryModal';
 import PetProfile from './components/PetProfile/PetProfile';
@@ -116,7 +115,6 @@ const App: React.FC = () => {
                     petName={pet.name}
                 />
                 {renderMainContent()}
-                <MusicPlayer isActive={currentView === 'space'} />
             </div>
 
             <AddMemoryModal

@@ -8,16 +8,16 @@ import { useStore } from '../store/useStore';
  * Only plays if isActive is true.
  * Provides position and duration for progress tracking.
  */
-export const useAudio = (src: string, isActive = true) => {
+export const useAudio = (src: string) => {
   const { isPlaying, volume, loopMode, nextTrack } = useStore();
   const howlRef = useRef<Howl | null>(null);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     // Initialize Howl instance
-    const howl = new Howl({
+    const howlOptions: any = {
       src: [src],
       html5: true,
       loop: loopMode === 'single',
@@ -39,17 +39,19 @@ export const useAudio = (src: string, isActive = true) => {
           nextTrack();
         }
       },
-      onload: () => {
-        setDuration(howl.duration());
+      onload: function(this: Howl) {
+        setDuration(this.duration());
       },
-      onloaderror: (_id, err) => console.error('Audio load error:', err),
-      onplayerror: (_id, err) => {
+      onloaderror: (_id: any, err: any) => console.error('Audio load error:', err),
+      onplayerror: function(this: Howl, _id: any, err: any) {
         console.error('Audio play error:', err);
-        howl.once('unlock', () => {
-          howl.play();
+        this.once('unlock', () => {
+          this.play();
         });
       }
-    });
+    };
+
+    const howl = new Howl(howlOptions);
 
     howlRef.current = howl;
 
@@ -82,11 +84,11 @@ export const useAudio = (src: string, isActive = true) => {
     }
   };
 
-  // Sync isPlaying and isActive state
+  // Sync isPlaying state
   useEffect(() => {
     if (!howlRef.current) return;
 
-    if (isPlaying && isActive) {
+    if (isPlaying) {
       if (!howlRef.current.playing()) {
         howlRef.current.play();
       }
@@ -95,7 +97,7 @@ export const useAudio = (src: string, isActive = true) => {
         howlRef.current.pause();
       }
     }
-  }, [isPlaying, isActive, src]);
+  }, [isPlaying, src]);
 
   // Sync volume state
   useEffect(() => {

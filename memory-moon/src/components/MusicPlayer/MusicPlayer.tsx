@@ -8,13 +8,13 @@ interface MusicPlayerProps {
 }
 
 const MusicPlayer: React.FC<MusicPlayerProps> = ({ isActive }) => {
-  const { isPlaying, setPlaying, tracks, currentTrackId, setCurrentTrack, loopMode, setLoopMode, nextTrack } = useStore();
+  const { isPlaying, setPlaying, tracks, currentTrackId, setCurrentTrack, loopMode, setLoopMode, nextTrack, volume, setVolume } = useStore();
   const [isPlaylistOpen, setIsPlaylistOpen] = React.useState(false);
   
   const currentTrack = tracks.find(t => t.id === currentTrackId) || tracks[0];
 
   // Get playback state from hook
-  const { position, duration, seek } = useAudio(currentTrack.url, isActive);
+  const { position, duration, seek } = useAudio(currentTrack.url);
 
   const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (duration === 0) return;
@@ -95,6 +95,33 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isActive }) => {
         <div className="player-progress-thumb" style={{ left: `${progressPercent}%` }} />
       </div>
 
+      {/* Volume Control */}
+      <div className="player-volume-container">
+        <button className="player-btn player-volume-btn" aria-label="Volume">
+          {volume === 0 ? (
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07" />
+              {volume > 0.6 && <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />}
+            </svg>
+          )}
+        </button>
+        <div className="player-volume-slider-wrapper">
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            className="player-volume-slider"
+          />
+        </div>
+      </div>
+
       {/* Loop mode toggle */}
       <button 
         className="player-btn player-loop" 
@@ -140,7 +167,10 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isActive }) => {
         </button>
 
         {isPlaylistOpen && (
-          <div className="playlist-popup glass-card">
+          <div 
+            className="playlist-popup glass-card"
+            onMouseLeave={() => setIsPlaylistOpen(false)}
+          >
             <header className="playlist-header">
               <span>Cloud Playlist</span>
             </header>
