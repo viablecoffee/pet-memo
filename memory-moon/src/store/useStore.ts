@@ -29,6 +29,7 @@ const DEMO_TRACKS: Track[] = [
 ];
 
 export type ThemeType = 'night' | 'sunset' | 'dawn';
+export type LoopMode = 'single' | 'list' | 'random';
 
 interface AppState {
   pet: Pet;
@@ -46,6 +47,7 @@ interface AppState {
   isLoaded: boolean;
   tracks: Track[];
   currentTrackId: string;
+  loopMode: LoopMode;
   selectMemory: (id: string | null) => void;
   addMemory: (m: Memory) => void;
   updateMemory: (m: Memory) => void;
@@ -61,6 +63,8 @@ interface AppState {
   addChatMessage: (msg: { role: 'user' | 'model'; text: string }) => void;
   clearChatHistory: () => void;
   setCurrentTrack: (id: string) => void;
+  setLoopMode: (mode: LoopMode) => void;
+  nextTrack: () => void;
 }
 
 const savePetToIDB = async (pet: Pet) => {
@@ -98,6 +102,7 @@ export const useStore = create<AppState>((set) => ({
   isLoaded: false,
   tracks: DEMO_TRACKS,
   currentTrackId: localStorage.getItem('current_track_id') || '1',
+  loopMode: (localStorage.getItem('app_loop_mode') as LoopMode) || 'list',
 
   selectMemory: (id) => set({ selectedMemoryId: id }),
 
@@ -176,6 +181,30 @@ export const useStore = create<AppState>((set) => ({
     localStorage.setItem('current_track_id', id);
     set({ currentTrackId: id });
   },
+
+  setLoopMode: (mode) => {
+    localStorage.setItem('app_loop_mode', mode);
+    set({ loopMode: mode });
+  },
+
+  nextTrack: () => set(s => {
+    const currentIndex = s.tracks.findIndex(t => t.id === s.currentTrackId);
+    let nextIndex = 0;
+
+    if (s.loopMode === 'random') {
+      nextIndex = Math.floor(Math.random() * s.tracks.length);
+      // Ensure we don't pick the same track if more than one track exists
+      if (s.tracks.length > 1 && nextIndex === currentIndex) {
+        nextIndex = (nextIndex + 1) % s.tracks.length;
+      }
+    } else {
+      nextIndex = (currentIndex + 1) % s.tracks.length;
+    }
+
+    const nextTrackId = s.tracks[nextIndex].id;
+    localStorage.setItem('current_track_id', nextTrackId);
+    return { currentTrackId: nextTrackId };
+  }),
 }));
 
 export const initializeStore = async () => {

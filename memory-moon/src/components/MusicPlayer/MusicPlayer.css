@@ -132,6 +132,17 @@
   opacity: 0.6;
 }
 
+.player-loop {
+  color: var(--color-text-dim);
+  opacity: 0.6;
+  margin-right: 4px;
+}
+
+.player-loop:hover {
+  opacity: 1;
+  color: var(--color-accent);
+}
+
 .player-more.active {
   color: var(--color-accent);
   opacity: 1;
