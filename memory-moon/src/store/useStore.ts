@@ -24,8 +24,12 @@ const DEMO_MEMORIES: Memory[] = [
 ];
 
 const DEMO_TRACKS: Track[] = [
-  { id: '1', name: 'Nature White Noise', url: '/assets/audio/white_noise_from_nature.mp3' },
+  { id: '1', name: 'White Noise from Nature', url: '/assets/audio/white_noise_from_nature.mp3' },
   { id: '2', name: 'A New Day with Hope', url: '/assets/audio/A New Day with Hope.mp3' },
+  { id: '3', name: 'Faraway Solicitude', url: '/assets/audio/Faraway Solicitude.mp3' },
+  { id: '4', name: "Zora's Domain (Night)", url: '/assets/audio/Zora\'s Domain.mp3' },
+  { id: '5', name: 'Fragment of Thought', url: '/assets/audio/Fragment of Thought.mp3' },
+  { id: '6', name: 'Kryust', url: '/assets/audio/Kryust.mp3' },
 ];
 
 export type ThemeType = 'night' | 'sunset' | 'dawn';
@@ -219,10 +223,10 @@ export const initializeStore = async () => {
     }
 
     if (memories.length > 0) {
-      useStore.setState({ 
-        memories, 
+      useStore.setState({
+        memories,
         selectedMemoryId: memories[0].id,
-        isLoaded: true 
+        isLoaded: true
       });
     } else {
       useStore.setState({ isLoaded: true });

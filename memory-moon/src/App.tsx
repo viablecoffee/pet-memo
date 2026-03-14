@@ -20,6 +20,8 @@ const App: React.FC = () => {
     const [editingMemory, setEditingMemory] = useState<Memory | null>(null);
     const [currentView, setCurrentView] = useState<ViewType>('space');
     const [isTopBarNear, setIsTopBarNear] = useState(false);
+    const [isTopBarHovered, setIsTopBarHovered] = useState(false);
+    const [isMusicOpen, setIsMusicOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
     const selectedMemory = memories.find(m => m.id === selectedMemoryId) ?? null;
@@ -47,9 +49,22 @@ const App: React.FC = () => {
             }
         };
 
-        window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove);
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, [currentView, isMobile]);
+
+    // Auto-hide music bubble after 8s of no hover
+    useEffect(() => {
+        let timer: ReturnType<typeof setTimeout>;
+        if (isMusicOpen && !isTopBarHovered) {
+            timer = setTimeout(() => {
+                setIsMusicOpen(false);
+            }, 3000);
+        }
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
+    }, [isMusicOpen, isTopBarHovered]);
 
     const renderMainContent = () => {
         switch (currentView) {
@@ -83,7 +98,10 @@ const App: React.FC = () => {
             <MoonScene />
             <div className="app-ui">
                 <TopBar
-                    isVisible={isMobile || currentView !== 'space' || isTopBarNear}
+                    isVisible={isMobile || currentView !== 'space' || isTopBarNear || isMusicOpen || isTopBarHovered}
+                    isMusicOpen={isMusicOpen}
+                    onMusicToggle={setIsMusicOpen}
+                    onHoverChange={setIsTopBarHovered}
                     onSpace={() => setCurrentView('space')}
                     onPetProfile={() => setCurrentView(currentView === 'profile' ? 'space' : 'profile')}
                     onAI={() => setCurrentView(currentView === 'ai' ? 'space' : 'ai')}

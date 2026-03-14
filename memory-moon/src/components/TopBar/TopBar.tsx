@@ -10,38 +10,44 @@ interface TopBarProps {
   onAI?: () => void;
   onSpace?: () => void;
   isVisible: boolean;
+  isMusicOpen: boolean;
+  onMusicToggle: (open: boolean) => void;
+  onHoverChange?: (hovered: boolean) => void;
   activeView?: 'space' | 'profile' | 'ai';
   petAvatar?: string;
   petName?: string;
 }
 
-const TopBar: React.FC<TopBarProps> = ({ onSearch, onSettings, onTogglePlanetStyle, onPetProfile, onAI, onSpace, isVisible, activeView = 'space', petAvatar, petName }) => {
+const TopBar: React.FC<TopBarProps> = ({ 
+  onSearch, onSettings, onTogglePlanetStyle, onPetProfile, onAI, onSpace, 
+  isVisible, isMusicOpen, onMusicToggle, onHoverChange,
+  activeView = 'space', petAvatar, petName 
+}) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMusicPlayerOpen, setIsMusicPlayerOpen] = useState(false);
   const musicContainerRef = useRef<HTMLDivElement>(null);
 
   // Close music player if topbar is hidden
   useEffect(() => {
     if (!isVisible) {
-      setIsMusicPlayerOpen(false);
+      onMusicToggle(false);
     }
-  }, [isVisible]);
+  }, [isVisible, onMusicToggle]);
 
   // Click outside listener
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (musicContainerRef.current && !musicContainerRef.current.contains(event.target as Node)) {
-        setIsMusicPlayerOpen(false);
+        onMusicToggle(false);
       }
     };
 
-    if (isMusicPlayerOpen) {
+    if (isMusicOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isMusicPlayerOpen]);
+  }, [isMusicOpen, onMusicToggle]);
 
   const handleNavClick = (callback: (() => void) | undefined) => {
     callback?.();
@@ -49,7 +55,11 @@ const TopBar: React.FC<TopBarProps> = ({ onSearch, onSettings, onTogglePlanetSty
   };
 
   return (
-    <header className={`topbar ${isVisible ? 'topbar--visible' : ''}`}>
+    <header 
+      className={`topbar ${isVisible ? 'topbar--visible' : ''}`}
+      onMouseEnter={() => onHoverChange?.(true)}
+      onMouseLeave={() => onHoverChange?.(false)}
+    >
       <div className="topbar__left">
         <button className="topbar__menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           ☰
@@ -93,8 +103,8 @@ const TopBar: React.FC<TopBarProps> = ({ onSearch, onSettings, onTogglePlanetSty
           </button>
           <div className="topbar__music-container" ref={musicContainerRef}>
             <button 
-              className={`topbar__btn ${isMusicPlayerOpen ? 'topbar__btn--active' : ''}`} 
-              onClick={() => setIsMusicPlayerOpen(!isMusicPlayerOpen)} 
+              className={`topbar__btn ${isMusicOpen ? 'topbar__btn--active' : ''}`} 
+              onClick={() => onMusicToggle(!isMusicOpen)} 
               aria-label="Music"
             >
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
@@ -103,7 +113,7 @@ const TopBar: React.FC<TopBarProps> = ({ onSearch, onSettings, onTogglePlanetSty
                 <circle cx="18" cy="16" r="3" />
               </svg>
             </button>
-            <div className={`topbar__music-popup ${isMusicPlayerOpen ? 'topbar__music-popup--visible' : ''}`}>
+            <div className={`topbar__music-popup ${isMusicOpen ? 'topbar__music-popup--visible' : ''}`}>
               <MusicPlayer isActive={true} />
             </div>
           </div>
