@@ -1,14 +1,47 @@
 .pet-profile {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 40px 40px;
+  z-index: 5;
+  background: radial-gradient(circle at center, rgba(13, 8, 24, 0.7) 0%, rgba(5, 3, 10, 0.9) 100%);
+  /* Initial state: must be hidden to prevent mount flash */
+  opacity: 0;
+  visibility: hidden;
+  transition: visibility 0.6s;
+  animation: bgOverlayFadeIn 0.6s ease-out forwards;
+  will-change: opacity;
+  overflow-y: auto;
+}
+
+.pet-profile-frame {
   width: 100%;
-  padding-top: 80px;
-  min-height: 100vh;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  max-width: 800px;
+  height: auto;
+  max-height: 85vh;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 32px;
+  backdrop-filter: blur(24px) brightness(0.8);
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow-y: auto;
+  /* CRITICAL: Set initial state matching keyframes to prevent flicker during animation-delay */
+  opacity: 0;
+  transform: translateY(30px) scale(0.98) translateZ(0);
+  animation: framePopIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.1s;
+  will-change: transform, opacity;
 }
 
 .pet-profile-main {
-  max-width: 600px;
+  width: 100%;
   margin: 0 auto;
-  padding: 40px 24px 100px;
 }
 
 .pet-identity {
@@ -174,10 +207,66 @@
 .memories-gallery {
   display: flex;
   gap: 12px;
+  align-items: center;
+}
+
+.gallery-nav {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.gallery-nav:hover {
+  background: rgba(212, 163, 115, 0.3);
+  border-color: #d4a373;
 }
 
 .memory-highlight-item {
   flex: 1;
+  cursor: pointer;
+}
+
+.memory-highlight-img {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 163, 115, 0.2);
+}
+
+.memory-highlight-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-enlarged {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  cursor: pointer;
+}
+
+.image-enlarged img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 .memory-highlight-placeholder {
@@ -309,14 +398,96 @@
   letter-spacing: 0.5px;
 }
 
-.edit-form-item input,
-.edit-form-item select {
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.edit-form-item input {
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   color: #fff;
   font-size: 14px;
+}
+
+.dropdown-trigger {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.dropdown-trigger:hover,
+.dropdown-trigger--open {
+  border-color: #d4a373;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.dropdown-arrow {
+  font-size: 10px;
+  opacity: 0.6;
+  transition: transform 0.3s ease;
+}
+
+.dropdown-trigger--open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-options {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: rgba(30, 25, 45, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 6px;
+  z-index: 100;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  animation: dropdownFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-option {
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdown-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.dropdown-option--selected {
+  background: rgba(212, 163, 115, 0.2);
+  color: #d4a373;
+  font-weight: 600;
 }
 
 .edit-form-item input:focus,
@@ -358,6 +529,31 @@
 
 .edit-save-btn:hover {
   filter: brightness(1.1);
+}
+
+/* --- Animations --- */
+@keyframes bgOverlayFadeIn {
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@keyframes framePopIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98) translateZ(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) translateZ(0);
+  }
 }
 
 @media (max-width: 480px) {

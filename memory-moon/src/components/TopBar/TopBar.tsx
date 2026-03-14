@@ -5,13 +5,17 @@ interface TopBarProps {
   onSearch?: () => void;
   onMusic?: () => void;
   onSettings?: () => void;
+  onTogglePlanetStyle?: () => void;
   onPetProfile?: () => void;
   onAI?: () => void;
+  onSpace?: () => void;
   isVisible: boolean;
   activeView?: 'space' | 'profile' | 'ai';
+  petAvatar?: string;
+  petName?: string;
 }
 
-const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetProfile, onAI, isVisible, activeView = 'space' }) => {
+const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onTogglePlanetStyle, onPetProfile, onAI, onSpace, isVisible, activeView = 'space', petAvatar, petName }) => {
   return (
     <header className={`topbar ${isVisible ? 'topbar--visible' : ''}`}>
       <div className="topbar__left">
@@ -24,19 +28,19 @@ const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetPro
       </div>
 
       <nav className="topbar__nav">
-        <button 
+        <button
           className={`topbar__nav-link ${activeView === 'space' ? 'topbar__nav-link--active' : ''}`}
-          onClick={() => activeView !== 'space' && onPetProfile?.()}
+          onClick={() => activeView !== 'space' && onSpace?.()}
         >
           Memory Space
         </button>
-        <button 
+        <button
           className={`topbar__nav-link ${activeView === 'ai' ? 'topbar__nav-link--active' : ''}`}
           onClick={onAI}
         >
           AI Companion
         </button>
-        <button 
+        <button
           className={`topbar__nav-link ${activeView === 'profile' ? 'topbar__nav-link--active' : ''}`}
           onClick={onPetProfile}
         >
@@ -59,6 +63,11 @@ const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetPro
               <circle cx="18" cy="16" r="3" />
             </svg>
           </button>
+          <button className="topbar__btn" onClick={onTogglePlanetStyle} aria-label="Toggle Planet Style">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
           <button className="topbar__btn" onClick={onSettings} aria-label="Settings">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="3" />
@@ -68,8 +77,8 @@ const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetPro
         </div>
 
         <div className="topbar__profile">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Milo" alt="Milo" className="topbar__avatar" />
-          <span className="topbar__username">Milo</span>
+          <img src={petAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${petName || 'Milo'}`} alt={petName || 'Milo'} className="topbar__avatar" />
+          <span className="topbar__username">{petName || 'Milo'}</span>
           <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" className="topbar__dropdown-icon">
             <path d="M7 10l5 5 5-5z" />
           </svg>

@@ -51,13 +51,13 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description) return;
+    if (!title.trim() || !description.trim()) return;
 
     const updatedMemory: Memory = {
       ...memory,
       date,
-      title,
-      description,
+      title: title.trim(),
+      description: description.trim(),
       photos,
       emoji: icon,
     };

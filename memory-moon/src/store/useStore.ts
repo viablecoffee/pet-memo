@@ -1,7 +1,20 @@
 import { create } from 'zustand';
 import type { Memory, Pet } from '../types';
 
-// Demo data (will be replaced by SQLite later)
+const STORAGE_KEYS = {
+  pet: 'pet_data',
+  memories: 'memories_data',
+} as const;
+
+const loadFromStorage = <T>(key: string, fallback: T): T => {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
 const DEMO_PET: Pet = {
   id: '1',
   name: 'Milo',
@@ -23,12 +36,21 @@ const DEMO_MEMORIES: Memory[] = [
   { id: '7', petId: '1', date: '2024-02-28', title: 'Final Moments', description: 'You were tired, but your eyes still held so much love. Thank you for everything, Milo.', photos: [], emoji: '🌙' },
 ];
 
+export type ThemeType = 'night' | 'sunset' | 'dawn';
+
 interface AppState {
   pet: Pet;
   memories: Memory[];
   selectedMemoryId: string | null;
   isPlaying: boolean;
   volume: number;
+  apiKey: string;
+  aiModel: string;
+  theme: ThemeType;
+  planetStyle: 'minimal' | 'artistic' | 'blue';
+  aiInsights: { label: string; text: string }[];
+  lastInsightUpdate: string | null;
+  chatHistory: { role: 'user' | 'model'; text: string }[];
   selectMemory: (id: string | null) => void;
   addMemory: (m: Memory) => void;
   updateMemory: (m: Memory) => void;
@@ -36,20 +58,85 @@ interface AppState {
   updatePet: (p: Pet) => void;
   setPlaying: (v: boolean) => void;
   setVolume: (v: number) => void;
+  setApiKey: (key: string) => void;
+  setAiModel: (model: string) => void;
+  cycleTheme: () => void;
+  togglePlanetStyle: () => void;
+  setAiInsights: (insights: { label: string; text: string }[], date: string) => void;
+  addChatMessage: (msg: { role: 'user' | 'model'; text: string }) => void;
+  clearChatHistory: () => void;
 }
 
 export const useStore = create<AppState>((set) => ({
-  pet: DEMO_PET,
-  memories: DEMO_MEMORIES,
+  pet: loadFromStorage<Pet>(STORAGE_KEYS.pet, DEMO_PET),
+  memories: loadFromStorage<Memory[]>(STORAGE_KEYS.memories, DEMO_MEMORIES),
   selectedMemoryId: '1',
   isPlaying: false,
   volume: 0.7,
+  apiKey: localStorage.getItem('gemini_api_key') || '',
+  aiModel: localStorage.getItem('gemini_ai_model') || 'gemini-1.5-flash',
+  theme: (localStorage.getItem('app_theme') as ThemeType) || 'night',
+  planetStyle: (localStorage.getItem('planet_style') as any) || 'minimal',
+  aiInsights: JSON.parse(localStorage.getItem('ai_insights') || '[]'),
+  lastInsightUpdate: localStorage.getItem('last_insight_update'),
+  chatHistory: JSON.parse(localStorage.getItem('ai_chat_history') || '[]'),
 
   selectMemory: (id) => set({ selectedMemoryId: id }),
-  addMemory: (m) => set(s => ({ memories: [...s.memories, m] })),
-  updateMemory: (m) => set(s => ({ memories: s.memories.map(x => x.id === m.id ? m : x) })),
-  deleteMemory: (id) => set(s => ({ memories: s.memories.filter(x => x.id !== id) })),
-  updatePet: (p) => set({ pet: p }),
+  addMemory: (m) => set(s => {
+    const newMemories = [...s.memories, m];
+    localStorage.setItem(STORAGE_KEYS.memories, JSON.stringify(newMemories));
+    return { memories: newMemories };
+  }),
+  updateMemory: (m) => set(s => {
+    const newMemories = s.memories.map(x => x.id === m.id ? m : x);
+    localStorage.setItem(STORAGE_KEYS.memories, JSON.stringify(newMemories));
+    return { memories: newMemories };
+  }),
+  deleteMemory: (id) => set(s => {
+    const newMemories = s.memories.filter(x => x.id !== id);
+    localStorage.setItem(STORAGE_KEYS.memories, JSON.stringify(newMemories));
+    return { memories: newMemories };
+  }),
+  updatePet: (p) => {
+    localStorage.setItem(STORAGE_KEYS.pet, JSON.stringify(p));
+    set({ pet: p });
+  },
   setPlaying: (v) => set({ isPlaying: v }),
   setVolume: (v) => set({ volume: v }),
+  setApiKey: (key) => {
+    localStorage.setItem('gemini_api_key', key);
+    set({ apiKey: key });
+  },
+  setAiModel: (model: string) => {
+    localStorage.setItem('gemini_ai_model', model);
+    set({ aiModel: model });
+  },
+  cycleTheme: () => set(s => {
+    const themes: ThemeType[] = ['night', 'sunset', 'dawn'];
+    const currentIndex = themes.indexOf(s.theme);
+    const nextTheme = themes[(currentIndex + 1) % themes.length];
+    localStorage.setItem('app_theme', nextTheme);
+    return { theme: nextTheme };
+  }),
+  togglePlanetStyle: () => set(s => {
+    const styles: ('minimal' | 'artistic' | 'blue')[] = ['minimal', 'artistic', 'blue'];
+    const currentIndex = styles.indexOf(s.planetStyle);
+    const nextStyle = styles[(currentIndex + 1) % styles.length];
+    localStorage.setItem('planet_style', nextStyle);
+    return { planetStyle: nextStyle };
+  }),
+  setAiInsights: (insights, date) => {
+    localStorage.setItem('ai_insights', JSON.stringify(insights));
+    localStorage.setItem('last_insight_update', date);
+    set({ aiInsights: insights, lastInsightUpdate: date });
+  },
+  addChatMessage: (msg) => set(s => {
+    const newHistory = [...s.chatHistory, msg];
+    localStorage.setItem('ai_chat_history', JSON.stringify(newHistory));
+    return { chatHistory: newHistory };
+  }),
+  clearChatHistory: () => {
+    localStorage.removeItem('ai_chat_history');
+    set({ chatHistory: [] });
+  },
 }));

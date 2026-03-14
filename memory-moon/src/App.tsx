@@ -14,7 +14,7 @@ import { useStore } from './store/useStore';
 type ViewType = 'space' | 'profile' | 'ai';
 
 const App: React.FC = () => {
-    const { pet, memories, selectedMemoryId, selectMemory } = useStore();
+    const { pet, memories, selectedMemoryId, selectMemory, cycleTheme, togglePlanetStyle } = useStore();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentView, setCurrentView] = useState<ViewType>('space');
     const [isTopBarNear, setIsTopBarNear] = useState(false);
@@ -64,11 +64,16 @@ const App: React.FC = () => {
             <StarField />
             <MoonScene />
             <div className="app-ui">
-                <TopBar 
-                    isVisible={currentView !== 'space' || isTopBarNear} 
+                <TopBar
+                    isVisible={currentView !== 'space' || isTopBarNear}
+                    onSpace={() => setCurrentView('space')}
                     onPetProfile={() => setCurrentView(currentView === 'profile' ? 'space' : 'profile')}
                     onAI={() => setCurrentView(currentView === 'ai' ? 'space' : 'ai')}
+                    onSettings={cycleTheme}
+                    onTogglePlanetStyle={togglePlanetStyle}
                     activeView={currentView}
+                    petAvatar={pet.avatarUrl}
+                    petName={pet.name}
                 />
                 {renderMainContent()}
             </div>

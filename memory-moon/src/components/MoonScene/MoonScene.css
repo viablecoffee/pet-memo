@@ -30,6 +30,14 @@
   opacity: 0;
 }
 
-.bird-1 { animation-delay: 0s; }
-.bird-2 { animation-delay: 0.5s; }
-.bird-3 { animation-delay: 1s; }
+.bird-1 {
+  animation-delay: 0s;
+}
+
+.bird-2 {
+  animation-delay: 0.5s;
+}
+
+.bird-3 {
+  animation-delay: 1s;
+}

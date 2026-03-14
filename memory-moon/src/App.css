@@ -3,6 +3,8 @@
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+    /* Prevent layout shift when scrollbars appear/disappear */
+    scrollbar-gutter: stable;
 }
 
 .app.app--scrolling {

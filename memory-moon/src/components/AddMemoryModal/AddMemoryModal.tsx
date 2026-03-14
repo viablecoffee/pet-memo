@@ -38,16 +38,20 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
+  const generateId = () => {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description) return;
+    if (!title.trim() || !description.trim()) return;
 
     const newMemory: Memory = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       petId: pet.id,
       date,
-      title,
-      description,
+      title: title.trim(),
+      description: description.trim(),
       photos,
       emoji: icon,
     };

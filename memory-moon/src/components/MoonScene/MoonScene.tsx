@@ -1,24 +1,109 @@
 import React, { Suspense, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Sphere, MeshDistortMaterial, Stars, OrbitControls, Billboard } from '@react-three/drei';
+import { MeshDistortMaterial, Stars, OrbitControls, Billboard, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import './MoonScene.css';
 import { useStore } from '../../store/useStore';
 
+// Shader patch to blend seams for non-seamless textures
+const useSeamPatch = () => {
+  return useMemo(() => (shader: any) => {
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <uv_pars_vertex>',
+      `#include <uv_pars_vertex>
+       varying vec2 vUvPatched;`
+    );
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <uv_vertex>',
+      `#include <uv_vertex>
+       vUvPatched = uv;`
+    );
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <map_pars_fragment>',
+      `#include <map_pars_fragment>
+       varying vec2 vUvPatched;
+       vec4 sampleSeamless(sampler2D tex, vec2 uv) {
+         float blendWidth = 0.015; // Width of the blend area
+         if (uv.x < blendWidth) {
+           float t = uv.x / blendWidth;
+           return mix(texture2D(tex, vec2(uv.x + 1.0, uv.y)), texture2D(tex, uv), t);
+         } else if (uv.x > 1.0 - blendWidth) {
+           float t = (1.0 - uv.x) / blendWidth;
+           return mix(texture2D(tex, vec2(uv.x - 1.0, uv.y)), texture2D(tex, uv), t);
+         }
+         return texture2D(tex, uv);
+       }`
+    );
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <map_fragment>',
+      `#ifdef USE_MAP
+         diffuseColor *= sampleSeamless( map, vUvPatched );
+       #endif`
+    );
+  }, []);
+};
+
 // Moon mesh - now rotates with the group
 const MoonMesh: React.FC = () => {
+  const { planetStyle } = useStore();
+  const patchSeam = useSeamPatch();
+
+  // Load textures
+  const textures = useTexture({
+    artistic: '/assets/images/artistic_moon_v2.png',
+    blue: '/assets/images/planet_blue.png'
+  }, (tex) => {
+    if (Array.isArray(tex)) return;
+    
+    // Common settings
+    const configureTexture = (t: THREE.Texture) => {
+      t.anisotropy = 16;
+      t.wrapS = THREE.RepeatWrapping;
+      t.wrapT = THREE.ClampToEdgeWrapping;
+      t.minFilter = THREE.LinearFilter;
+      t.magFilter = THREE.LinearFilter;
+      t.generateMipmaps = false;
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.needsUpdate = true;
+    };
+
+    if (tex.artistic) configureTexture(tex.artistic);
+    if (tex.blue) configureTexture(tex.blue);
+  });
+
   return (
-    <Sphere args={[1.8, 64, 64]}>
-      <MeshDistortMaterial
-        color="#c8a96e"
-        roughness={0.85}
-        metalness={0.12}
-        distort={0.12}
-        speed={0.8}
-        emissive="#5c3d1a"
-        emissiveIntensity={0.15}
-      />
-    </Sphere>
+    <mesh>
+      <sphereGeometry args={[1.8, 128, 128]} />
+      {planetStyle === 'minimal' ? (
+        <MeshDistortMaterial
+          color="#c8a96e"
+          roughness={0.85}
+          metalness={0.12}
+          distort={0.12}
+          speed={0.8}
+          emissive="#5c3d1a"
+          emissiveIntensity={0.15}
+        />
+      ) : planetStyle === 'artistic' ? (
+        <meshStandardMaterial
+          map={textures.artistic}
+          roughness={1}
+          metalness={0}
+          emissive="#ffffff"
+          emissiveIntensity={0.08}
+          onBeforeCompile={patchSeam}
+        />
+      ) : (
+        <meshStandardMaterial
+          map={textures.blue}
+          roughness={0.7}
+          metalness={0.2}
+          emissive="#7fbfff"
+          emissiveIntensity={0.05}
+          onBeforeCompile={patchSeam}
+        />
+      )}
+    </mesh>
   );
 };
 
@@ -81,6 +166,8 @@ const MemoryStars: React.FC = () => {
             position={pos}
             isSelected={isSelected}
             onClick={() => handleClick(memory.id)}
+            photoCount={memory.photos?.length || 0}
+            descriptionLength={memory.description?.length || 0}
           />
         );
       })}
@@ -92,10 +179,17 @@ const MemoryStar: React.FC<{
   position: [number, number, number];
   isSelected: boolean;
   onClick: () => void;
-}> = ({ position, isSelected, onClick }) => {
+  photoCount: number;
+  descriptionLength: number;
+}> = ({ position, isSelected, onClick, photoCount, descriptionLength }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = React.useState(false);
+
+  const maxPhotos = 5;
+  const maxDescLength = 200;
+  const photoScale = 1 + Math.min(photoCount, maxPhotos) * 0.1;
+  const descScale = 1 + Math.min(descriptionLength, maxDescLength) * 0.003;
 
   const glowTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
@@ -117,7 +211,7 @@ const MemoryStar: React.FC<{
     const baseScale = isSelected ? 1.5 : 1;
     const hoverScale = hovered ? 1.3 : 1;
     const pulse = Math.sin(t * 2) * 0.1 + 1;
-    const scale = baseScale * hoverScale * (isSelected ? pulse : 1);
+    const scale = baseScale * hoverScale * photoScale * descScale * (isSelected ? pulse : 1);
 
     if (meshRef.current) {
       meshRef.current.scale.setScalar(scale * 0.04);
@@ -180,30 +274,62 @@ const MoonSystem: React.FC = () => {
 };
 
 const MoonScene: React.FC = () => {
-  const { selectMemory } = useStore();
+  const { theme, selectMemory } = useStore();
+
+  const themeConfig = useMemo(() => {
+    switch (theme) {
+      case 'sunset':
+        return {
+          ambient: 0.4,
+          dirIntensity: 1.5,
+          dirColor: "#ffaa33",
+          pointIntensity: 0.6,
+          pointColor: "#ff4400",
+          bgClass: "moon-scene--sunset"
+        };
+      case 'dawn':
+        return {
+          ambient: 0.5,
+          dirIntensity: 1.0,
+          dirColor: "#80ccff",
+          pointIntensity: 0.3,
+          pointColor: "#ffffff",
+          bgClass: "moon-scene--dawn"
+        };
+      default: // night
+        return {
+          ambient: 0.3,
+          dirIntensity: 1.2,
+          dirColor: "#ffe8c0",
+          pointIntensity: 0.4,
+          pointColor: "#8040ff",
+          bgClass: "moon-scene--night"
+        };
+    }
+  }, [theme]);
 
   return (
-    <div className="moon-scene">
+    <div className={`moon-scene ${themeConfig.bgClass}`}>
       <Canvas
         camera={{ position: [0, 0, 6], fov: 50 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent' }}
         onPointerMissed={() => selectMemory(null)}
       >
-        <ambientLight intensity={0.3} />
-        <directionalLight position={[5, 3, 5]} intensity={1.2} color="#ffe8c0" />
-        <pointLight position={[-4, -2, 3]} intensity={0.4} color="#8040ff" />
+        <ambientLight intensity={themeConfig.ambient} />
+        <directionalLight position={[5, 3, 5]} intensity={themeConfig.dirIntensity} color={themeConfig.dirColor} />
+        <pointLight position={[-4, -2, 3]} intensity={themeConfig.pointIntensity} color={themeConfig.pointColor} />
 
         <Suspense fallback={null}>
           <MoonSystem />
           <Stars
             radius={30}
             depth={20}
-            count={800}
+            count={theme === 'night' ? 800 : theme === 'sunset' ? 400 : 300}
             factor={2}
-            saturation={0.2}
+            saturation={theme === 'night' ? 0.2 : 0.4}
             fade
-            speed={0.3}
+            speed={theme === 'night' ? 0.3 : 0.15}
           />
           <OrbitControls
             enablePan={false}

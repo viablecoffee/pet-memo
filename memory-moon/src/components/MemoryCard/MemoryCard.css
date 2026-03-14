@@ -3,12 +3,23 @@
   right: 28px;
   top: 80px;
   width: 260px;
+  max-height: calc(100vh - 100px);
   padding: 20px;
   z-index: 10;
   animation: fadeInUp 0.5s ease both;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow-y: auto;
+}
+
+.memory-card::-webkit-scrollbar {
+  width: 4px;
+}
+
+.memory-card::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
 }
 
 .memory-card--empty {
@@ -26,6 +37,7 @@
   align-items: center;
   gap: 6px;
   color: var(--color-star);
+  flex-shrink: 0;
 }
 
 .memory-card__star {
@@ -45,6 +57,7 @@
   font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.2;
+  flex-shrink: 0;
 }
 
 /* Photo */
@@ -55,6 +68,7 @@
   border: 1px solid var(--color-card-border);
   aspect-ratio: 4/3;
   background: rgba(200, 169, 110, 0.06);
+  flex-shrink: 0;
 }
 
 .memory-card__photo {
@@ -144,6 +158,7 @@
   gap: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--color-card-border);
+  flex-shrink: 0;
 }
 
 .memory-card__meta {
