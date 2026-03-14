@@ -203,10 +203,13 @@
 }
 
 .memories-header {
+  margin-bottom: 2px;
+}
+
+.memories-title-group {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
+  gap: 12px;
 }
 
 .memories-header .section-title {
@@ -222,7 +225,7 @@
 .memories-subtitle {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.5);
-  margin: 0 0 20px 0;
+  margin: 0 0 16px 0;
 }
 
 .memories-gallery {
@@ -707,9 +710,36 @@
   }
 }
 
+@media (max-width: 600px) {
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .info-value {
+    text-align: right;
+    width: 100%;
+  }
+
+  .edit-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 480px) {
+  .pet-profile {
+    padding: 80px 15px 20px;
+  }
+
+  .pet-profile-frame {
+    padding: 24px 20px;
+    border-radius: 24px;
+    max-height: 90vh;
+  }
+
   .pet-profile-main {
-    padding: 24px 16px 100px;
+    padding: 0;
   }
 
   .pet-name {
@@ -717,13 +747,36 @@
   }
 
   .pet-avatar {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
   }
 
   .pet-avatar-glow {
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    height: 110px;
+  }
+
+  .memories-header {
+    margin-bottom: 4px;
+  }
+
+  .memories-title-group {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+  }
+
+  .memories-count {
+    font-size: 13px;
+    opacity: 0.9;
+  }
+
+  .section-title {
+    font-size: 13px;
+    margin-bottom: 0px !important;
+  }
+
+  .memories-subtitle {
+    margin-bottom: 12px;
   }
 
   .memories-gallery {
@@ -744,11 +797,11 @@
   }
 
   .gallery-nav--prev {
-    left: -16px;
+    left: 4px;
   }
 
   .gallery-nav--next {
-    right: -16px;
+    right: 4px;
   }
 }
 

@@ -24,9 +24,9 @@ const App: React.FC = () => {
     const [isTopBarNear, setIsTopBarNear] = useState(false);
     const [isTopBarHovered, setIsTopBarHovered] = useState(false);
     const [isMusicOpen, setIsMusicOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
-    const [showLeftPanel, setShowLeftPanel] = useState(true);
-    const [showRightPanel, setShowRightPanel] = useState(true);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 960);
+    const [showLeftPanel, setShowLeftPanel] = useState(window.innerWidth > 960);
+    const [showRightPanel, setShowRightPanel] = useState(window.innerWidth > 960);
 
     const selectedMemory = memories.find(m => m.id === selectedMemoryId) ?? null;
 
@@ -34,8 +34,12 @@ const App: React.FC = () => {
     const rightPanelRef = useRef<HTMLDivElement>(null);
 
     const handleSelectMemory = (id: string) => {
-        selectMemory(id);
-        setShowRightPanel(true);
+        if (selectedMemoryId === id && showRightPanel) {
+            setShowRightPanel(false);
+        } else {
+            selectMemory(id);
+            setShowRightPanel(true);
+        }
     };
 
     // Smart click-outside: collapse panels when clicking outside
@@ -164,7 +168,13 @@ const App: React.FC = () => {
                     isMusicOpen={isMusicOpen}
                     onMusicToggle={setIsMusicOpen}
                     onHoverChange={setIsTopBarHovered}
-                    onSpace={() => setCurrentView('space')}
+                    onSpace={() => {
+                        setCurrentView('space');
+                        if (window.innerWidth <= 960) {
+                            setShowLeftPanel(false);
+                            setShowRightPanel(false);
+                        }
+                    }}
                     onPetProfile={() => setCurrentView(currentView === 'profile' ? 'space' : 'profile')}
                     onAI={() => setCurrentView(currentView === 'ai' ? 'space' : 'ai')}
                     onSettings={cycleTheme}
