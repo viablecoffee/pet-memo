@@ -1,4 +1,4 @@
-.pet-profile {
+﻿.pet-profile {
   position: fixed;
   inset: 0;
   display: flex;
@@ -65,9 +65,9 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 140px;
-  height: 140px;
-  background: radial-gradient(circle, rgba(212, 163, 115, 0.4) 0%, transparent 70%);
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(212, 163, 115, 0.25) 0%, transparent 70%);
   border-radius: 50%;
   animation: glow-pulse 3s ease-in-out infinite;
 }
@@ -88,12 +88,12 @@
 
 .pet-avatar {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  border: 3px solid rgba(212, 163, 115, 0.5);
+  border: 2px solid rgba(212, 163, 115, 0.6);
   object-fit: cover;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
 }
 
 .pet-avatar-overlay {
@@ -131,36 +131,54 @@
 }
 
 .pet-info-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 20px;
-  padding: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 16px;
+  padding: 24px 32px;
   margin-bottom: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #fff;
-  margin: 0 0 20px 0;
-  letter-spacing: 0.3px;
+  margin: 0 0 24px 0;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.8;
 }
 
 .info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
 .full-width {
-  grid-column: 1 / -1;
+  width: 100%;
 }
 
 .info-item {
   display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.info-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.info-item.full-width {
   flex-direction: column;
-  gap: 4px;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .info-label {
@@ -174,7 +192,8 @@
 .info-value {
   font-size: 15px;
   color: #fff;
-  font-weight: 500;
+  font-weight: 600;
+  text-align: right;
 }
 
 .memories-section {
@@ -250,6 +269,7 @@
     opacity: 0;
     transform: translateX(30px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateX(0) scale(1);
@@ -617,6 +637,7 @@
     gap: 12px;
   }
 }
+
 /* Tag Styles */
 .pet-tag-list {
   display: flex;

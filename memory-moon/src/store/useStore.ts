@@ -17,13 +17,13 @@ const DEMO_PET: Pet = {
 };
 
 const DEMO_MEMORIES: Memory[] = [
-  { id: '1', petId: '1', date: '2018-06-12', title: 'Adoption Day', description: 'The day we met you for the first time. You wagged your tail and ran straight into my arms. From that moment, you became my whole world.', photos: [], emoji: '🐾' },
-  { id: '2', petId: '1', date: '2019-03-20', title: 'First Walk', description: 'Your first walk at the park. You were so excited, sniffing everything in sight.', photos: [], emoji: '🦮' },
-  { id: '3', petId: '1', date: '2020-07-04', title: 'Beach Trip', description: 'A sunny beach day. You loved chasing waves and digging in the sand.', photos: [], emoji: '✈️' },
-  { id: '4', petId: '1', date: '2021-06-12', title: 'Birthday', description: 'Your 3rd birthday. We baked you a special dog-friendly cake!', photos: [], emoji: '🎂' },
-  { id: '5', petId: '1', date: '2022-01-10', title: 'Snow Day', description: 'Your first time seeing snow. You leaped and rolled in it for hours.', photos: [], emoji: '❄️' },
-  { id: '6', petId: '1', date: '2023-08-15', title: 'Happy Summer', description: 'A wonderful trip to the lake together. The sunset was beautiful, and you couldn\'t stop swimming.', photos: [], emoji: '☀️' },
-  { id: '7', petId: '1', date: '2024-02-28', title: 'Our Story Goes On', description: 'Every day with you is a new adventure. Thank you for bringing so much joy into my life, Milo.', photos: [], emoji: '🌙' },
+  { id: '1', petId: '1', date: '2018-06-12', title: 'Adoption Day', description: 'The day we met you for the first time. You wagged your tail and ran straight into my arms. From that moment, you became my whole world.', photos: ['/assets/images/adoption_day.jpg'], emoji: '🐾' },
+  { id: '2', petId: '1', date: '2019-03-20', title: 'First Walk', description: 'Your first walk at the park. You were so excited, sniffing everything in sight.', photos: ['/assets/images/first_walk.jpg'], emoji: '🦮' },
+  { id: '3', petId: '1', date: '2020-07-04', title: 'Beach Trip', description: 'A sunny beach day. You loved chasing waves and digging in the sand.', photos: ['/assets/images/beach_trip.jpg'], emoji: '✈️' },
+  { id: '4', petId: '1', date: '2021-06-12', title: 'Birthday', description: 'Your 3rd birthday. We baked you a special dog-friendly cake!', photos: ['/assets/images/birthday.jpg'], emoji: '🎂' },
+  { id: '5', petId: '1', date: '2022-01-10', title: 'Snow Day', description: 'Your first time seeing snow. You leaped and rolled in it for hours.', photos: ['/assets/images/snow_day.jpg'], emoji: '❄️' },
+  { id: '6', petId: '1', date: '2023-08-15', title: 'Happy Summer', description: 'A wonderful trip to the lake together. The sunset was beautiful, and you couldn\'t stop swimming.', photos: ['/assets/images/happy_summer.jpg'], emoji: '☀️' },
+  { id: '7', petId: '1', date: '2024-02-28', title: 'Our Story Goes On', description: 'Every day with you is a new adventure. Thank you for bringing so much joy into my life, Milo.', photos: ['/assets/images/our_story_goes_on.jpg'], emoji: '🌙' },
 ];
 
 const DEMO_TRACKS: Track[] = [
