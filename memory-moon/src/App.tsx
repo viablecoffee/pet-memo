@@ -22,6 +22,8 @@ const App: React.FC = () => {
     const [currentView, setCurrentView] = useState<ViewType>('space');
     const [isTopBarNear, setIsTopBarNear] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [showLeftPanel, setShowLeftPanel] = useState(true);
+    const [showRightPanel, setShowRightPanel] = useState(true);
 
     const selectedMemory = memories.find(m => m.id === selectedMemoryId) ?? null;
 
@@ -38,7 +40,7 @@ const App: React.FC = () => {
     // Mouse proximity detector for TopBar
     useEffect(() => {
         if (isMobile) return;
-        
+
         const handleMouseMove = (e: MouseEvent) => {
             if (currentView !== 'space') return;
             if (e.clientY < 60) {
@@ -61,18 +63,37 @@ const App: React.FC = () => {
             default:
                 return (
                     <>
-                        <Timeline
-                            petName={pet.name}
-                            memories={memories}
-                            selectedId={selectedMemoryId}
-                            onSelect={selectMemory}
-                            onAddClick={() => setIsModalOpen(true)}
-                        />
-                        <MemoryCard 
-                            memory={selectedMemory} 
-                            onEdit={setEditingMemory}
-                            onDelete={deleteMemory}
-                        />
+                        <div className={`side-panel side-panel--left ${showLeftPanel ? '' : 'side-panel--hidden'}`}>
+                            <Timeline
+                                petName={pet.name}
+                                memories={memories}
+                                selectedId={selectedMemoryId}
+                                onSelect={selectMemory}
+                                onAddClick={() => setIsModalOpen(true)}
+                            />
+                            <button
+                                className={`panel-toggle panel-toggle--left ${showLeftPanel ? '' : 'panel-toggle--collapsed'}`}
+                                onClick={() => setShowLeftPanel(!showLeftPanel)}
+                                aria-label="Toggle Timeline"
+                            >
+                                {showLeftPanel ? '←' : '→'}
+                            </button>
+                        </div>
+                        <div className={`side-panel side-panel--right ${showRightPanel ? '' : 'side-panel--hidden'}`}>
+                            <MemoryCard
+                                memory={selectedMemory}
+                                onEdit={setEditingMemory}
+                                onDelete={deleteMemory}
+                            />
+                            <button
+                                key={`toggle-right-${selectedMemoryId}`}
+                                className={`panel-toggle panel-toggle--right ${showRightPanel ? '' : 'panel-toggle--collapsed'}`}
+                                onClick={() => setShowRightPanel(!showRightPanel)}
+                                aria-label="Toggle Memory Card"
+                            >
+                                {showRightPanel ? '→' : '←'}
+                            </button>
+                        </div>
                     </>
                 );
         }
