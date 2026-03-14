@@ -43,7 +43,9 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory, onEdit, onDelete }) => 
   if (!memory) {
     return (
       <div className="memory-card glass-card memory-card--empty">
-        <p>Select a memory from the timeline</p>
+        <span className="memory-card__empty-icon">🌙</span>
+        <p className="memory-card__empty-text">Select a memory<br />from the timeline</p>
+        <span className="memory-card__empty-hint">✦ or click a star in the sky</span>
       </div>
     );
   }
@@ -91,15 +93,15 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory, onEdit, onDelete }) => 
           <span className="memory-card__tagline">Forever in my heart</span>
         </div>
         <div className="memory-card__actions">
-          <button 
-            className="action-btn" 
+          <button
+            className="action-btn"
             onClick={() => onEdit?.(memory)}
             aria-label="Edit memory"
           >
             ✏️
           </button>
-          <button 
-            className="action-btn" 
+          <button
+            className="action-btn"
             onClick={() => onDelete?.(memory.id)}
             aria-label="Delete memory"
           >

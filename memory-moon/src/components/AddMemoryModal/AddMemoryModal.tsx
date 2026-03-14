@@ -91,24 +91,24 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
           <button className="modal-close" onClick={onClose}>&times;</button>
         </header>
 
-        <form className="modal-form" onSubmit={handleSubmit}>
+        <form id="add-memory-form" className="modal-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Date</label>
-            <input 
-              type="date" 
-              value={date} 
-              onChange={e => setDate(e.target.value)} 
+            <input
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
               required
             />
           </div>
 
           <div className="form-group">
             <label>Title</label>
-            <input 
-              type="text" 
-              placeholder="e.g. Adoption Day" 
-              value={title} 
-              onChange={e => setTitle(e.target.value)} 
+            <input
+              type="text"
+              placeholder="e.g. Adoption Day"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
               required
             />
           </div>
@@ -169,19 +169,21 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
 
           <div className="form-group">
             <label>Memory Description <span className="char-count">({description.length}/{MAX_DESC_LENGTH})</span></label>
-            <textarea 
-              rows={4} 
-              placeholder="Write something beautiful..." 
-              value={description} 
+            <textarea
+              rows={4}
+              placeholder="Write something beautiful..."
+              value={description}
               onChange={handleDescriptionChange}
               required
             />
           </div>
+        </form>
 
-          <button type="submit" className="submit-btn">
+        <div className="modal-form-footer">
+          <button type="submit" form="add-memory-form" className="submit-btn" aria-label="Create Star Memory">
             Create Star Memory
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );

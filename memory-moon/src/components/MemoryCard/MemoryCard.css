@@ -1,3 +1,4 @@
+/* ── Memory Card Panel ─────────────────────────── */
 .memory-card {
   position: absolute;
   right: 28px;
@@ -11,33 +12,99 @@
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
+
+  /* Step 1: Glowing border + depth */
+  background: linear-gradient(160deg,
+      rgba(18, 10, 35, 0.92) 0%,
+      rgba(10, 6, 22, 0.96) 100%);
+  border: 1px solid rgba(200, 169, 110, 0.2);
+  box-shadow:
+    0 0 0 1px rgba(200, 169, 110, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 24px 64px rgba(0, 0, 0, 0.55);
+
+  /* Step 4: Aurora border animation */
+  animation: aurora-border-card 8s ease-in-out infinite, fadeInUp 0.5s ease both;
 }
 
+@keyframes aurora-border-card {
+
+  0%,
+  100% {
+    border-color: rgba(200, 169, 110, 0.22);
+  }
+
+  33% {
+    border-color: rgba(160, 130, 200, 0.28);
+  }
+
+  66% {
+    border-color: rgba(110, 160, 200, 0.22);
+  }
+}
+
+/* ── Scrollbar ──────────────────────────────────── */
 .memory-card::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 
 .memory-card::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(200, 169, 110, 0.25);
   border-radius: 2px;
 }
 
+/* ── Empty State ────────────────────────────────── */
 .memory-card--empty {
   align-items: center;
   justify-content: center;
-  color: var(--color-text-dim);
-  font-size: 13px;
   min-height: 200px;
   top: 50%;
   transform: translateY(-50%);
+  gap: 16px;
+  text-align: center;
 }
 
+.memory-card__empty-icon {
+  font-size: 40px;
+  animation: float-icon 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(200, 169, 110, 0.4));
+}
+
+@keyframes float-icon {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.memory-card__empty-text {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.memory-card__empty-hint {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+}
+
+/* ── Header ─────────────────────────────────────── */
 .memory-card__header {
   display: flex;
   align-items: center;
   gap: 6px;
   color: var(--color-star);
   flex-shrink: 0;
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(200, 169, 110, 0.12);
 }
 
 .memory-card__star {
@@ -46,11 +113,13 @@
 }
 
 .memory-card__date {
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
   color: var(--color-text-muted);
+  text-transform: uppercase;
 }
 
+/* ── Title ──────────────────────────────────────── */
 .memory-card__title {
   font-family: var(--font-title);
   font-size: 22px;
@@ -58,17 +127,21 @@
   color: var(--color-text-primary);
   line-height: 1.2;
   flex-shrink: 0;
+  text-shadow: 0 0 20px rgba(200, 169, 110, 0.25);
 }
 
-/* Photo */
+/* ── Photo ──────────────────────────────────────── */
 .memory-card__photo-frame {
   position: relative;
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid var(--color-card-border);
+  border: 1px solid rgba(200, 169, 110, 0.2);
   aspect-ratio: 4/3;
   background: rgba(200, 169, 110, 0.06);
   flex-shrink: 0;
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .memory-card__photo {
@@ -85,17 +158,17 @@
   align-items: center;
   justify-content: center;
   font-size: 48px;
-  background: linear-gradient(135deg, rgba(200,169,110,0.08), rgba(80,40,120,0.12));
+  background: linear-gradient(135deg, rgba(200, 169, 110, 0.08), rgba(80, 40, 120, 0.15));
 }
 
-/* Photo navigation */
+/* ── Photo Navigation ───────────────────────────── */
 .photo-nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   width: 28px;
   height: 28px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.55);
   border: none;
   border-radius: 50%;
   color: white;
@@ -121,7 +194,7 @@
 }
 
 .photo-nav:hover {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
 }
 
 .photo-indicator {
@@ -137,27 +210,33 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.35);
+  transition: background var(--transition);
 }
 
 .photo-dot.active {
-  background: white;
+  background: rgba(255, 255, 255, 0.9);
 }
 
-/* Description */
+/* ── Description ────────────────────────────────── */
 .memory-card__desc {
   font-size: 12.5px;
   color: var(--color-text-muted);
-  line-height: 1.7;
+  line-height: 1.8;
   font-style: italic;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 2px solid rgba(200, 169, 110, 0.3);
+  border-radius: 0 4px 4px 0;
 }
 
+/* ── Footer ─────────────────────────────────────── */
 .memory-card__footer {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding-top: 12px;
-  border-top: 1px solid var(--color-card-border);
+  border-top: 1px solid rgba(200, 169, 110, 0.12);
   flex-shrink: 0;
 }
 
@@ -167,21 +246,35 @@
   gap: 6px;
 }
 
+.memory-card__heart {
+  color: rgba(200, 130, 130, 0.8);
+  font-size: 12px;
+}
+
+.memory-card__tagline {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  letter-spacing: 0.05em;
+  font-style: italic;
+}
+
 .memory-card__actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 8px;
 }
 
 .action-btn {
   font-size: 14px;
   color: var(--color-text-dim);
   transition: all var(--transition);
-  padding: 4px;
-  border-radius: 4px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
 }
 
 .action-btn:hover {
   color: #e88080;
-  background: rgba(232, 128, 128, 0.1);
+  background: rgba(232, 128, 128, 0.08);
+  border-color: rgba(232, 128, 128, 0.2);
 }

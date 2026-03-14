@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import './EditMemoryModal.css';
 import { useStore } from '../../store/useStore';
 import type { Memory } from '../../types';
@@ -94,7 +94,7 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
           <button className="modal-close" onClick={onClose}>&times;</button>
         </header>
 
-        <form className="modal-form" onSubmit={handleSubmit}>
+        <form id="edit-memory-form" className="modal-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Date</label>
             <input 
@@ -180,11 +180,13 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
               required
             />
           </div>
+        </form>
 
-          <button type="submit" className="submit-btn">
+        <div className="modal-form-footer">
+          <button type="submit" form="edit-memory-form" className="submit-btn" aria-label="Save Changes">
             Save Changes
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );
