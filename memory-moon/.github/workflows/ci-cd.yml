@@ -3,14 +3,19 @@ name: CI/CD Build
 on:
   push:
     branches:
-      - release
+      - main
 
 permissions:
   contents: write
 
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest]
+
+    runs-on: ${{ matrix.platform }}
     
     steps:
       - name: Checkout repository
@@ -27,26 +32,20 @@ jobs:
         working-directory: memory-moon
         run: npm ci
 
-      - name: Build frontend
-        working-directory: memory-moon
-        run: npm run build
-
       - name: Setup Rust
         uses: dtolnay/rust-action@stable
         with:
           toolchain: stable
 
-      - name: Build Tauri app
-        working-directory: memory-moon
-        run: npm run tauri build
+      - name: Build and Release Tauri app
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          # TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-
-      - name: Upload release asset
-        if: github.event_name == 'push'
-        uses: actions/upload-artifact@v4
         with:
-          name: release-build
-          path: memory-moon/src-tauri/target/release/bundle
+          projectPath: memory-moon
+          tagName: app-v__VERSION__ # tauri-action will replace __VERSION__ with the version from tauri.conf.json
+          releaseName: "Release v__VERSION__"
+          releaseBody: "Automated release from CI/CD on main branch."
+          releaseDraft: true
+          prerelease: false
+
