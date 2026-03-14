@@ -155,6 +155,10 @@ const MemoryStars: React.FC<{ onStarClick?: (id: string) => void }> = ({ onStarC
     ];
   };
 
+  const countWords = (text: string) => {
+    return text.trim() ? text.trim().split(/\s+/).length : 0;
+  };
+
   return (
     <>
       {sortedMemories.map((memory, i) => {
@@ -168,7 +172,7 @@ const MemoryStars: React.FC<{ onStarClick?: (id: string) => void }> = ({ onStarC
             isSelected={isSelected}
             onClick={() => handleClick(memory.id)}
             photoCount={memory.photos?.length || 0}
-            descriptionLength={memory.description?.length || 0}
+            descriptionLength={countWords(memory.description || '')}
           />
         );
       })}
@@ -188,9 +192,9 @@ const MemoryStar: React.FC<{
   const [hovered, setHovered] = React.useState(false);
 
   const maxPhotos = 5;
-  const maxDescLength = 200;
+  const maxDescWords = 200;
   const photoScale = 1 + Math.min(photoCount, maxPhotos) * 0.1;
-  const descScale = 1 + Math.min(descriptionLength, maxDescLength) * 0.003;
+  const descScale = 1 + Math.min(descriptionLength, maxDescWords) * 0.003;
 
   const glowTexture = useMemo(() => {
     const canvas = document.createElement('canvas');

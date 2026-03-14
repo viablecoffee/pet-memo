@@ -20,7 +20,13 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_PHOTOS = 9;
-  const MAX_DESC_LENGTH = 200;
+  const MAX_DESC_WORDS = 200;
+
+  const countChars = (text: string) => {
+    const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+    const englishWords = text.trim().split(/\s+/).filter(w => /[a-zA-Z]/.test(w)).length;
+    return chineseChars + englishWords;
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -58,9 +64,13 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
-    if (text.length <= MAX_DESC_LENGTH) {
+    if (countChars(text) <= MAX_DESC_WORDS) {
       setDescription(text);
     }
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
   };
 
   const handleClose = () => {
@@ -123,7 +133,7 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
               type="text"
               placeholder="e.g. Adoption Day"
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={handleTitleChange}
               required
             />
           </div>
@@ -183,7 +193,7 @@ const AddMemoryModal: React.FC<AddMemoryModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           <div className="form-group">
-            <label>Memory Description <span className="char-count">({description.length}/{MAX_DESC_LENGTH})</span></label>
+            <label>Memory Description <span className="char-count">({countChars(description)}/{MAX_DESC_WORDS} chars)</span></label>
             <textarea
               rows={4}
               placeholder="Write something beautiful..."

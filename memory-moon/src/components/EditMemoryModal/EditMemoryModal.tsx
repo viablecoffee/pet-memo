@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './EditMemoryModal.css';
 import { useStore } from '../../store/useStore';
 import type { Memory } from '../../types';
@@ -21,7 +21,13 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_PHOTOS = 9;
-  const MAX_DESC_LENGTH = 200;
+  const MAX_DESC_WORDS = 200;
+
+  const countChars = (text: string) => {
+    const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+    const englishWords = text.trim().split(/\s+/).filter(w => /[a-zA-Z]/.test(w)).length;
+    return chineseChars + englishWords;
+  };
 
   useEffect(() => {
     if (isOpen && memory) {
@@ -65,9 +71,13 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
-    if (text.length <= MAX_DESC_LENGTH) {
+    if (countChars(text) <= MAX_DESC_WORDS) {
       setDescription(text);
     }
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
   };
 
   const handleClose = () => {
@@ -126,7 +136,7 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
               type="text"
               placeholder="e.g. Adoption Day"
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={handleTitleChange}
               required
             />
           </div>
@@ -186,7 +196,7 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
           </div>
 
           <div className="form-group">
-            <label>Memory Description <span className="char-count">({description.length}/{MAX_DESC_LENGTH})</span></label>
+            <label>Memory Description <span className="char-count">({countChars(description)}/{MAX_DESC_WORDS} chars)</span></label>
             <textarea
               rows={4}
               placeholder="Write something beautiful..."
