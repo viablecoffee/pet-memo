@@ -48,4 +48,3 @@ jobs:
           releaseBody: "Automated release from CI/CD on main branch."
           releaseDraft: true
           prerelease: false
-
