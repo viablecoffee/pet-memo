@@ -22,3 +22,4 @@ The following features are part of the project vision, but are not yet implement
 
 This repository currently reflects the **foundation stage** of the project.  
 The README describes the intended product vision, while the existing codebase represents the technical groundwork that will support the MVP.
+
