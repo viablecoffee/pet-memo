@@ -9,9 +9,22 @@ const STORAGE_KEYS = {
 const loadFromStorage = <T>(key: string, fallback: T): T => {
   try {
     const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : fallback;
-  } catch {
+    if (!stored) return fallback;
+    return JSON.parse(stored);
+  } catch (error) {
+    console.error(`Failed to load from storage for key "${key}":`, error);
     return fallback;
+  }
+};
+
+const saveToStorage = (key: string, value: any) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error(`Failed to save to storage for key "${key}":`, error);
+    if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+      alert('Storage quota exceeded. Please try removing some old photos or memories.');
+    }
   }
 };
 
@@ -84,55 +97,55 @@ export const useStore = create<AppState>((set) => ({
   selectMemory: (id) => set({ selectedMemoryId: id }),
   addMemory: (m) => set(s => {
     const newMemories = [...s.memories, m];
-    localStorage.setItem(STORAGE_KEYS.memories, JSON.stringify(newMemories));
+    saveToStorage(STORAGE_KEYS.memories, newMemories);
     return { memories: newMemories };
   }),
   updateMemory: (m) => set(s => {
     const newMemories = s.memories.map(x => x.id === m.id ? m : x);
-    localStorage.setItem(STORAGE_KEYS.memories, JSON.stringify(newMemories));
+    saveToStorage(STORAGE_KEYS.memories, newMemories);
     return { memories: newMemories };
   }),
   deleteMemory: (id) => set(s => {
     const newMemories = s.memories.filter(x => x.id !== id);
-    localStorage.setItem(STORAGE_KEYS.memories, JSON.stringify(newMemories));
+    saveToStorage(STORAGE_KEYS.memories, newMemories);
     return { memories: newMemories };
   }),
   updatePet: (p) => {
-    localStorage.setItem(STORAGE_KEYS.pet, JSON.stringify(p));
+    saveToStorage(STORAGE_KEYS.pet, p);
     set({ pet: p });
   },
   setPlaying: (v) => set({ isPlaying: v }),
   setVolume: (v) => set({ volume: v }),
   setApiKey: (key) => {
-    localStorage.setItem('gemini_api_key', key);
+    saveToStorage('gemini_api_key', key);
     set({ apiKey: key });
   },
   setAiModel: (model: string) => {
-    localStorage.setItem('gemini_ai_model', model);
+    saveToStorage('gemini_ai_model', model);
     set({ aiModel: model });
   },
   cycleTheme: () => set(s => {
     const themes: ThemeType[] = ['night', 'sunset', 'dawn'];
     const currentIndex = themes.indexOf(s.theme);
     const nextTheme = themes[(currentIndex + 1) % themes.length];
-    localStorage.setItem('app_theme', nextTheme);
+    saveToStorage('app_theme', nextTheme);
     return { theme: nextTheme };
   }),
   togglePlanetStyle: () => set(s => {
     const styles: ('minimal' | 'artistic' | 'blue')[] = ['minimal', 'artistic', 'blue'];
     const currentIndex = styles.indexOf(s.planetStyle);
     const nextStyle = styles[(currentIndex + 1) % styles.length];
-    localStorage.setItem('planet_style', nextStyle);
+    saveToStorage('planet_style', nextStyle);
     return { planetStyle: nextStyle };
   }),
   setAiInsights: (insights, date) => {
-    localStorage.setItem('ai_insights', JSON.stringify(insights));
-    localStorage.setItem('last_insight_update', date);
+    saveToStorage('ai_insights', insights);
+    saveToStorage('last_insight_update', date);
     set({ aiInsights: insights, lastInsightUpdate: date });
   },
   addChatMessage: (msg) => set(s => {
     const newHistory = [...s.chatHistory, msg];
-    localStorage.setItem('ai_chat_history', JSON.stringify(newHistory));
+    saveToStorage('ai_chat_history', newHistory);
     return { chatHistory: newHistory };
   }),
   clearChatHistory: () => {

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import './EditMemoryModal.css';
 import { useStore } from '../../store/useStore';
 import type { Memory } from '../../types';
+import { compressImage } from '../../utils/image';
 
 interface EditMemoryModalProps {
   memory: Memory | null;
@@ -36,9 +37,16 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
 
     Array.from(files).forEach(file => {
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         if (event.target?.result) {
-          setPhotos(prev => [...prev, event.target!.result as string]);
+          try {
+            const compressed = await compressImage(event.target.result as string);
+            setPhotos(prev => [...prev, compressed]);
+          } catch (error) {
+            console.error('Failed to compress image:', error);
+            // Fallback to original if compression fails
+            setPhotos(prev => [...prev, event.target!.result as string]);
+          }
         }
       };
       reader.readAsDataURL(file);
