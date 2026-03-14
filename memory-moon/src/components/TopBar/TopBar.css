@@ -101,7 +101,8 @@
 .topbar__music-popup {
   position: absolute;
   top: calc(100% + 12px);
-  right: -144px; /* Center 320px player under 32px icon: (320-32)/2 */
+  right: -144px;
+  /* Center 320px player under 32px icon: (320-32)/2 */
   z-index: 100;
   opacity: 0;
   visibility: hidden;
@@ -118,8 +119,15 @@
 }
 
 @keyframes music-slide-down {
-  from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .topbar__btn {
@@ -190,22 +198,32 @@
 
 /* Mobile dropdown menu */
 .topbar__mobile-menu {
-  display: none;
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
   background: rgba(13, 8, 24, 0.95);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(200, 169, 110, 0.2);
   padding: 12px;
+  display: flex;
   flex-direction: column;
   gap: 8px;
   z-index: 100;
+
+  /* Animation initial state */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .topbar__mobile-menu.open {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 .topbar__mobile-nav-link {

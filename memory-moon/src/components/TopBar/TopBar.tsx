@@ -18,36 +18,47 @@ interface TopBarProps {
   petName?: string;
 }
 
-const TopBar: React.FC<TopBarProps> = ({ 
-  onSearch, onSettings, onTogglePlanetStyle, onPetProfile, onAI, onSpace, 
+const TopBar: React.FC<TopBarProps> = ({
+  onSearch, onSettings, onTogglePlanetStyle, onPetProfile, onAI, onSpace,
   isVisible, isMusicOpen, onMusicToggle, onHoverChange,
-  activeView = 'space', petAvatar, petName 
+  activeView = 'space', petAvatar, petName
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const musicContainerRef = useRef<HTMLDivElement>(null);
+  const mobileMenuContainerRef = useRef<HTMLDivElement>(null);
 
-  // Close music player if topbar is hidden
+  // Close music player and mobile menu if topbar is hidden
   useEffect(() => {
     if (!isVisible) {
       onMusicToggle(false);
+      setIsMobileMenuOpen(false);
     }
   }, [isVisible, onMusicToggle]);
 
-  // Click outside listener
+  // Click outside listener for both music player and mobile menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Handle music player
       if (musicContainerRef.current && !musicContainerRef.current.contains(event.target as Node)) {
         onMusicToggle(false);
       }
+      // Handle mobile menu
+      if (mobileMenuContainerRef.current && !mobileMenuContainerRef.current.contains(event.target as Node)) {
+        // Important: check if the click target is the menu button itself to avoid double-toggling
+        const menuBtn = document.querySelector('.topbar__menu-btn');
+        if (menuBtn && !menuBtn.contains(event.target as Node)) {
+          setIsMobileMenuOpen(false);
+        }
+      }
     };
 
-    if (isMusicOpen) {
+    if (isMusicOpen || isMobileMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isMusicOpen, onMusicToggle]);
+  }, [isMusicOpen, isMobileMenuOpen, onMusicToggle]);
 
   const handleNavClick = (callback: (() => void) | undefined) => {
     callback?.();
@@ -55,14 +66,18 @@ const TopBar: React.FC<TopBarProps> = ({
   };
 
   return (
-    <header 
+    <header
       className={`topbar ${isVisible ? 'topbar--visible' : ''}`}
       onMouseEnter={() => onHoverChange?.(true)}
       onMouseLeave={() => onHoverChange?.(false)}
     >
       <div className="topbar__left">
-        <button className="topbar__menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          ☰
+        <button
+          className="topbar__menu-btn"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+        >
+          {isMobileMenuOpen ? '✕' : '☰'}
         </button>
         <div className="topbar__brand">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="topbar__brand-icon">
@@ -102,9 +117,9 @@ const TopBar: React.FC<TopBarProps> = ({
             </svg>
           </button>
           <div className="topbar__music-container" ref={musicContainerRef}>
-            <button 
-              className={`topbar__btn ${isMusicOpen ? 'topbar__btn--active' : ''}`} 
-              onClick={() => onMusicToggle(!isMusicOpen)} 
+            <button
+              className={`topbar__btn ${isMusicOpen ? 'topbar__btn--active' : ''}`}
+              onClick={() => onMusicToggle(!isMusicOpen)}
               aria-label="Music"
             >
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
@@ -139,7 +154,10 @@ const TopBar: React.FC<TopBarProps> = ({
         </div>
       </div>
 
-      <div className={`topbar__mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+      <div
+        ref={mobileMenuContainerRef}
+        className={`topbar__mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}
+      >
         <button
           className={`topbar__mobile-nav-link ${activeView === 'space' ? 'topbar__mobile-nav-link--active' : ''}`}
           onClick={() => handleNavClick(activeView !== 'space' ? onSpace : undefined)}
