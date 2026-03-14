@@ -3,6 +3,16 @@ import './AICompanion.css';
 import { useStore } from '../../store/useStore';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+const formatMessage = (text: string): string => {
+  if (!text) return '';
+  let formatted = text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/• /g, '<br/>• ')
+    .replace(/\n/g, '<br/>');
+  return formatted;
+};
+
 const AICompanion: React.FC = () => {
   const {
     pet,
@@ -50,7 +60,7 @@ const AICompanion: React.FC = () => {
     setIsGeneratingInsights(true);
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const systemInstruction = `You are Echo, a robot pet companion for ${currentPet.name}. Based on provided pet data and memories, generate 3 personalized insights.`;
+      const systemInstruction = `You are Echo, a data-driven pet care advisor. Generate practical, actionable insights based on pet data.`;
 
       const model = genAI.getGenerativeModel({
         model: aiModel,
@@ -58,10 +68,15 @@ const AICompanion: React.FC = () => {
       });
 
       const prompt = `
-        Pet Profile: Name: ${currentPet.name}, Breed: ${currentPet.breed}, Born: ${currentPet.birthDate}.
-        Memories: ${petMemories.map(m => `${m.date}: ${m.title} - ${m.description}`).join('; ')}.
+        Based on this pet data, generate 3 practical care tips:
+        Pet: ${currentPet.name}, ${currentPet.breed || 'breed unknown'}, Born: ${currentPet.birthDate || 'unknown'}, Gender: ${currentPet.gender || 'unknown'}, Weight: ${currentPet.weight || 'unknown'}.
+        Recent memories: ${petMemories.slice(0, 5).map(m => `${m.title} (${m.date})`).join(', ')}.
 
-        Format your response as a JSON array of 3 objects with "label" (e.g., Wellness, Reflection, Activity) and "text" (max 150 chars).
+        Generate a JSON array with 3 objects. Each object must have:
+        - "label": one of "Health Tip", "Memory Suggestion", "Care Reminder"
+        - "text": practical advice in 20-30 words, no poetry, no emojis
+
+        Example: [{"label": "Health Tip", "text": "Regular brushing helps reduce shedding and improves coat health."}]
         Return ONLY the raw JSON array.
       `;
 
@@ -95,7 +110,7 @@ const AICompanion: React.FC = () => {
 
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const systemInstruction = `You are Echo, a friendly robot dog companion for ${currentPet.name}. Keep responses conversational, empathetic, and occasionally use dog-related metaphors. You know all memories: ${petMemories.map(m => m.title).join(', ')}.`;
+      const systemInstruction = `You are Echo, a professional pet care advisor for ${currentPet.name}'s owner. Keep your responses brief and concise (2-4 sentences max). Use simple formatting with line breaks. Focus on being practical and actionable. You know ${currentPet.name}'s memories: ${petMemories.map(m => m.title).join(', ')}.`;
 
       const model = genAI.getGenerativeModel({
         model: aiModel,
@@ -109,7 +124,7 @@ const AICompanion: React.FC = () => {
           role: m.role === 'user' ? 'user' : 'model',
           parts: [{ text: m.text }],
         })),
-        generationConfig: { maxOutputTokens: 500, temperature: 0.7 },
+        generationConfig: { maxOutputTokens: 1000, temperature: 0.7 },
       });
 
       const result = await chat.sendMessage(chatInput);
@@ -238,7 +253,7 @@ const AICompanion: React.FC = () => {
                   <img src="/assets/images/echo_avatar.png" alt="Echo" className="ai-msg__avatar" />
                   <div className="ai-msg__bubble">
                     <span className="ai-msg__name">Echo</span>
-                    Woof! I'm Echo. I've been looking through {currentPet?.name}'s memories. Want to talk about one of them?
+                    <span>Hello! I'm Echo, your pet care advisor. I've been reviewing {currentPet?.name}'s memories.<br/><br/>Feel free to ask me about pet care tips, or let's reminisce about the precious moments you shared together!</span>
                   </div>
                 </div>
               )}
@@ -252,7 +267,7 @@ const AICompanion: React.FC = () => {
                   />
                   <div className="ai-msg__bubble">
                     <span className="ai-msg__name">{msg.role === 'model' ? 'Echo' : 'You'}</span>
-                    {msg.text}
+                    <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.text) }} />
                   </div>
                 </div>
               ))}

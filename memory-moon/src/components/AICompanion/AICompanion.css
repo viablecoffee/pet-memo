@@ -290,6 +290,22 @@
   font-size: 14px;
   line-height: 1.5;
   position: relative;
+  white-space: pre-wrap;
+}
+
+.ai-msg__bubble strong {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.ai-msg__bubble em {
+  color: var(--color-moon);
+}
+
+.ai-msg__bubble br {
+  display: block;
+  content: "";
+  margin: 4px 0;
 }
 
 .ai-msg--echo .ai-msg__bubble {
