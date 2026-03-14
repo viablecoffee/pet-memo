@@ -43,16 +43,43 @@
   }
 }
 
+.timeline-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
 .timeline-title {
   font-family: var(--font-title);
   font-size: 15px;
   font-weight: 400;
   color: var(--color-text-primary);
   letter-spacing: 0.02em;
-  margin-bottom: 4px;
 
   /* Subtle text glow */
   text-shadow: 0 0 12px rgba(200, 169, 110, 0.4);
+}
+
+.timeline-toggle-all {
+  font-size: 26px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  opacity: 0.7;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.timeline-toggle-all:hover {
+  color: var(--color-accent);
+  opacity: 1;
+  background: rgba(200, 169, 110, 0.12);
 }
 
 /* ── List + Items ───────────────────────────────── */
@@ -89,6 +116,65 @@
   flex-direction: column;
 }
 
+/* ── Year header (accordion toggle) ─────────────── */
+.timeline-year-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 30px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background var(--transition);
+  position: relative;
+}
+
+.timeline-year-header:hover {
+  background: rgba(200, 169, 110, 0.07);
+}
+
+.timeline-year-header.expanded {
+  background: rgba(200, 169, 110, 0.05);
+}
+
+.year-header__label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+.timeline-year-header.has-active .year-header__label {
+  color: var(--color-accent);
+}
+
+.year-header__chevron {
+  font-size: 10px;
+  color: var(--color-text-dim);
+  transition: transform var(--transition);
+  margin-left: auto;
+}
+
+.year-header__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  margin-left: 4px;
+}
+
+/* ── Expanded items container ────────────────────── */
+.timeline-year-items {
+  display: flex;
+  flex-direction: column;
+  padding-left: 4px;
+  animation: fadeInUp 0.2s ease;
+}
+
+/* ── Items inside expanded year ──────────────────── */
 .timeline-item {
   position: relative;
   display: flex;
@@ -109,20 +195,8 @@
   background: rgba(200, 169, 110, 0.14);
 }
 
-.year-label {
-  position: absolute;
-  top: -18px;
-  left: 30px;
-  font-size: 11px;
-  color: var(--color-text-muted);
-  letter-spacing: 0.05em;
-}
-
-.timeline-list .timeline-year-group:not(:first-child) .year-label {
-  top: -16px;
-}
-
 /* ── Dots ───────────────────────────────────────── */
+
 .timeline-dot {
   width: 22px;
   height: 22px;
@@ -184,6 +258,7 @@
 .timeline-year-group:first-child {
   margin-top: 20px;
 }
+
 .timeline-year-group+.timeline-year-group {
   margin-top: 18px;
 }
