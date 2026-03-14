@@ -66,6 +66,7 @@ const App: React.FC = () => {
             <div className="app-ui">
                 <TopBar 
                     isVisible={currentView !== 'space' || isTopBarNear} 
+                    onSpace={() => setCurrentView('space')}
                     onPetProfile={() => setCurrentView(currentView === 'profile' ? 'space' : 'profile')}
                     onAI={() => setCurrentView(currentView === 'ai' ? 'space' : 'ai')}
                     activeView={currentView}

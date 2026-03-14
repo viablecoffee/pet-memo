@@ -7,11 +7,12 @@ interface TopBarProps {
   onSettings?: () => void;
   onPetProfile?: () => void;
   onAI?: () => void;
+  onSpace?: () => void;
   isVisible: boolean;
   activeView?: 'space' | 'profile' | 'ai';
 }
 
-const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetProfile, onAI, isVisible, activeView = 'space' }) => {
+const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetProfile, onAI, onSpace, isVisible, activeView = 'space' }) => {
   return (
     <header className={`topbar ${isVisible ? 'topbar--visible' : ''}`}>
       <div className="topbar__left">
@@ -26,7 +27,7 @@ const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onPetPro
       <nav className="topbar__nav">
         <button 
           className={`topbar__nav-link ${activeView === 'space' ? 'topbar__nav-link--active' : ''}`}
-          onClick={() => activeView !== 'space' && onPetProfile?.()}
+          onClick={() => activeView !== 'space' && onSpace?.()}
         >
           Memory Space
         </button>
