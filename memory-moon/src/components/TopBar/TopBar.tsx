@@ -216,10 +216,7 @@ const TopBar: React.FC<TopBarProps> = ({
             {pets.length < 6 && (
               <button
                 className="topbar__add-pet-btn"
-                onClick={() => {
-                  onAddPet?.();
-                  setIsPetDropdownOpen(false);
-                }}
+                onClick={handleAddPet}
               >
                 <span className="topbar__add-pet-icon">+</span>
                 Add Pet
