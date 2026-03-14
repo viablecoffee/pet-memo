@@ -39,13 +39,76 @@
 }
 
 
-/* --- Top Header --- */
+/* --- Top Header & Settings --- */
 .ai-companion__header {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   margin-bottom: 32px;
+  position: relative;
+}
+
+.ai-companion__settings-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px;
+  border-radius: 10px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ai-companion__settings-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.ai-settings-panel {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 320px;
+  background: rgba(30, 25, 45, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 20px;
+  z-index: 100;
+  text-align: left;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  animation: dropdownFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.ai-settings-panel h4 {
+  margin-top: 0;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.ai-settings-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px;
+  color: #fff;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.ai-settings-save-btn {
+  width: 100%;
+  padding: 8px;
+  background: var(--color-moon);
+  color: #0d0818;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .ai-companion__echo-avatar {
@@ -76,7 +139,7 @@
 /* --- Columns Layout --- */
 .ai-companion__grid {
   display: grid;
-  grid-template-columns: 260px 1fr 260px;
+  grid-template-columns: 280px 1fr 240px;
   gap: 24px;
   flex: 1;
   overflow: hidden;
@@ -103,10 +166,15 @@
 }
 
 /* --- Dashboard Section (Left) --- */
+.ai-insights {
+  height: 100%;
+}
+
 .ai-insights__list {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
 }
 
 .ai-insight-item {
@@ -128,11 +196,35 @@
   letter-spacing: 0.05em;
 }
 
+.ai-insights-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* --- Chat Section (Center) --- */
 .ai-chat {
   display: flex;
   flex-direction: column;
   padding: 0;
+  overflow: hidden;
 }
 
 .ai-chat__messages {
@@ -142,6 +234,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
 /* --- Message Bubbles --- */
@@ -149,6 +243,19 @@
   display: flex;
   gap: 12px;
   max-width: 85%;
+  animation: msgPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes msgPop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .ai-msg--echo {
@@ -173,6 +280,7 @@
   border-radius: 16px;
   font-size: 14px;
   line-height: 1.5;
+  position: relative;
 }
 
 .ai-msg--echo .ai-msg__bubble {
@@ -193,6 +301,44 @@
   font-weight: 600;
   margin-bottom: 4px;
   color: var(--color-moon);
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-moon);
+  border-radius: 50%;
+  opacity: 0.4;
+  animation: typing-bounce 1s infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing-bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
 }
 
 /* --- Chat Input --- */
