@@ -73,7 +73,6 @@ const App: React.FC = () => {
                             onEdit={setEditingMemory}
                             onDelete={deleteMemory}
                         />
-                        <MusicPlayer />
                     </>
                 );
         }
@@ -96,6 +95,7 @@ const App: React.FC = () => {
                     petName={pet.name}
                 />
                 {renderMainContent()}
+                <MusicPlayer isActive={currentView === 'space'} />
             </div>
 
             <AddMemoryModal
