@@ -206,10 +206,10 @@ const AICompanion: React.FC = () => {
           )}
 
           <img src="/assets/images/echo_avatar.png" alt="Echo AI Avatar" className="ai-companion__echo-avatar" />
-          <h1 className="ai-companion__title">{currentPet?.name}'s AI Companion: Echo</h1>
-          <p className="ai-companion__subtitle">
-            Powered by Gemini Flash. Echo evolves daily based on your shared memories and pet profile.
-          </p>
+          <div className="ai-companion__header-text">
+            <h1 className="ai-companion__title">{currentPet?.name}'s AI Companion: Echo</h1>
+            <p className="ai-companion__subtitle">Echo evolves daily based on your shared memories and pet profile.</p>
+          </div>
         </div>
 
         <div className="ai-companion__grid">
@@ -253,7 +253,7 @@ const AICompanion: React.FC = () => {
                   <img src="/assets/images/echo_avatar.png" alt="Echo" className="ai-msg__avatar" />
                   <div className="ai-msg__bubble">
                     <span className="ai-msg__name">Echo</span>
-                    <span>Hello! I'm Echo, your pet care advisor. I've been reviewing {currentPet?.name}'s memories.<br/><br/>Feel free to ask me about pet care tips, or let's reminisce about the precious moments you shared together!</span>
+                    <span>Hello! I'm Echo, your pet care advisor. I've been reviewing {currentPet?.name}'s memories.<br /><br />Feel free to ask me about pet care tips, or let's reminisce about the precious moments you shared together!</span>
                   </div>
                 </div>
               )}
