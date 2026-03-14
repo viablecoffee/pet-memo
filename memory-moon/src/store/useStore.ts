@@ -13,6 +13,7 @@ const DEMO_PET: Pet = {
   weight: '25 kg',
   hobbies: 'Running, Swimming, Chasing balls',
   favoriteFood: 'Beef jerky, Chicken breast, Apples',
+  avatarUrl: '/assets/images/milo_avatar.jpg',
 };
 
 const DEMO_MEMORIES: Memory[] = [
@@ -21,8 +22,8 @@ const DEMO_MEMORIES: Memory[] = [
   { id: '3', petId: '1', date: '2020-07-04', title: 'Beach Trip', description: 'A sunny beach day. You loved chasing waves and digging in the sand.', photos: [], emoji: '✈️' },
   { id: '4', petId: '1', date: '2021-06-12', title: 'Birthday', description: 'Your 3rd birthday. We baked you a special dog-friendly cake!', photos: [], emoji: '🎂' },
   { id: '5', petId: '1', date: '2022-01-10', title: 'Snow Day', description: 'Your first time seeing snow. You leaped and rolled in it for hours.', photos: [], emoji: '❄️' },
-  { id: '6', petId: '1', date: '2023-08-15', title: 'Last Summer', description: 'Our last trip to the lake together. The sunset was beautiful.', photos: [], emoji: '☀️' },
-  { id: '7', petId: '1', date: '2024-02-28', title: 'Final Moments', description: 'You were tired, but your eyes still held so much love. Thank you for everything, Milo.', photos: [], emoji: '🌙' },
+  { id: '6', petId: '1', date: '2023-08-15', title: 'Happy Summer', description: 'A wonderful trip to the lake together. The sunset was beautiful, and you couldn\'t stop swimming.', photos: [], emoji: '☀️' },
+  { id: '7', petId: '1', date: '2024-02-28', title: 'Our Story Goes On', description: 'Every day with you is a new adventure. Thank you for bringing so much joy into my life, Milo.', photos: [], emoji: '🌙' },
 ];
 
 const DEMO_TRACKS: Track[] = [
