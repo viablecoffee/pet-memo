@@ -62,12 +62,12 @@
 }
 
 .timeline-toggle-all {
-  font-size: 26px;
+  font-size: 32px;
   line-height: 1;
   color: var(--color-text-muted);
   opacity: 0.7;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -90,25 +90,26 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-
-  /* Step 2: vertical connector line */
-  position: relative;
 }
 
-/* The connector line runs the full height of the list */
-.timeline-list::before {
+.timeline-list-inner {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The connector line runs the full height of the list content */
+.timeline-list-inner::before {
   content: '';
   position: absolute;
   left: 17px;
   top: 0;
   bottom: 0;
   width: 1px;
-  background: linear-gradient(to bottom,
-      transparent,
-      rgba(200, 169, 110, 0.4) 8%,
-      rgba(200, 169, 110, 0.4) 92%,
-      transparent);
+  background: rgba(200, 169, 110, 0.4);
   pointer-events: none;
+  z-index: 0;
 }
 
 
@@ -155,7 +156,7 @@
 }
 
 .year-header__chevron {
-  font-size: 10px;
+  font-size: 20px;
   color: var(--color-text-dim);
   transition: transform var(--transition);
   margin-left: auto;
@@ -174,7 +175,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding-left: 4px;
+  padding-left: 10px;
   animation: fadeInUp 0.2s ease;
 }
 
