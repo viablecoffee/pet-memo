@@ -1,8 +1,56 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import './PetProfile.css';
 import { useStore } from '../../store/useStore';
 import type { Pet } from '../../types';
 import AvatarBuilder from '../AvatarBuilder/AvatarBuilder';
+
+const TagInput = ({ value, onChange, placeholder }: { value: string; onChange: (val: string) => void; placeholder: string }) => {
+  const [inputValue, setInputValue] = useState('');
+  const tags = value ? value.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const newTag = inputValue.trim();
+      if (newTag && !tags.includes(newTag)) {
+        onChange([...tags, newTag].join(', '));
+      }
+      setInputValue('');
+    } else if (e.key === 'Backspace' && !inputValue && tags.length > 0) {
+      onChange(tags.slice(0, -1).join(', '));
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    onChange(tags.filter(t => t !== tagToRemove).join(', '));
+  };
+
+  return (
+    <div className="tag-input-container">
+      {tags.map(tag => (
+        <span key={tag} className="tag-chip">
+          {tag}
+          <button type="button" onClick={() => removeTag(tag)} className="tag-remove-btn">&times;</button>
+        </span>
+      ))}
+      <input
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={() => {
+          const newTag = inputValue.trim();
+          if (newTag && !tags.includes(newTag)) {
+            onChange([...tags, newTag].join(', '));
+          }
+          setInputValue('');
+        }}
+        placeholder={tags.length === 0 ? placeholder : 'Add more... (press Enter)'}
+        className="tag-input-field"
+      />
+    </div>
+  );
+};
 
 const PetProfile: React.FC = () => {
   const { pet, memories, updatePet } = useStore();
@@ -120,8 +168,7 @@ const PetProfile: React.FC = () => {
                       onClick={() => setIsGenderOpen(!isGenderOpen)}
                     >
                       {genderOptions.find(o => o.value === editForm.gender)?.label || 'Not set'}
-                      <span className="dropdown-arrow">▼</span>
-                    </div>
+                      <span className="dropdown-arrow">▼</span>                    </div>
                     {isGenderOpen && (
                       <div className="dropdown-options">
                         {genderOptions.map(option => (
@@ -177,19 +224,17 @@ const PetProfile: React.FC = () => {
                 </div>
                 <div className="edit-form-item full-width">
                   <label>Hobbies</label>
-                  <input
-                    type="text"
+                  <TagInput
                     value={editForm.hobbies || ''}
-                    onChange={(e) => setEditForm({ ...editForm, hobbies: e.target.value })}
+                    onChange={(val) => setEditForm({ ...editForm, hobbies: val })}
                     placeholder="e.g. Running, Swimming"
                   />
                 </div>
                 <div className="edit-form-item full-width">
                   <label>Favorite Food</label>
-                  <input
-                    type="text"
+                  <TagInput
                     value={editForm.favoriteFood || ''}
-                    onChange={(e) => setEditForm({ ...editForm, favoriteFood: e.target.value })}
+                    onChange={(val) => setEditForm({ ...editForm, favoriteFood: val })}
                     placeholder="e.g. Beef, Apples"
                   />
                 </div>
@@ -276,11 +321,19 @@ const PetProfile: React.FC = () => {
               </div>
               <div className="info-item full-width">
                 <span className="info-label">Hobbies</span>
-                <span className="info-value">{pet.hobbies || 'Not set'}</span>
+                <div className="pet-tag-list">
+                  {pet.hobbies ? pet.hobbies.split(',').map((tag, i) => (
+                    <span key={i} className="pet-tag">{tag.trim()}</span>
+                  )) : <span className="info-value">Not set</span>}
+                </div>
               </div>
               <div className="info-item full-width">
                 <span className="info-label">Favorite Food</span>
-                <span className="info-value">{pet.favoriteFood || 'Not set'}</span>
+                <div className="pet-tag-list">
+                  {pet.favoriteFood ? pet.favoriteFood.split(',').map((tag, i) => (
+                    <span key={i} className="pet-tag">{tag.trim()}</span>
+                  )) : <span className="info-value">Not set</span>}
+                </div>
               </div>
             </div>
           </section>
@@ -291,7 +344,7 @@ const PetProfile: React.FC = () => {
               <span className="memories-count">{memories.length} Memories</span>
             </div>
             <p className="memories-subtitle">Memory Highlights</p>
-            <div 
+            <div
               className="memories-gallery"
               onWheel={handleWheel}
               ref={galleryRef}
@@ -352,3 +405,5 @@ const PetProfile: React.FC = () => {
 };
 
 export default PetProfile;
+
+
