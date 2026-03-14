@@ -1,32 +1,6 @@
 import { create } from 'zustand';
 import type { Memory, Pet } from '../types';
-
-const STORAGE_KEYS = {
-  pet: 'pet_data',
-  memories: 'memories_data',
-} as const;
-
-const loadFromStorage = <T>(key: string, fallback: T): T => {
-  try {
-    const stored = localStorage.getItem(key);
-    if (!stored) return fallback;
-    return JSON.parse(stored);
-  } catch (error) {
-    console.error(`Failed to load from storage for key "${key}":`, error);
-    return fallback;
-  }
-};
-
-const saveToStorage = (key: string, value: any) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch (error) {
-    console.error(`Failed to save to storage for key "${key}":`, error);
-    if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
-      alert('Storage quota exceeded. Please try removing some old photos or memories.');
-    }
-  }
-};
+import idb from './idb';
 
 const DEMO_PET: Pet = {
   id: '1',
@@ -64,6 +38,7 @@ interface AppState {
   aiInsights: { label: string; text: string }[];
   lastInsightUpdate: string | null;
   chatHistory: { role: 'user' | 'model'; text: string }[];
+  isLoaded: boolean;
   selectMemory: (id: string | null) => void;
   addMemory: (m: Memory) => void;
   updateMemory: (m: Memory) => void;
@@ -80,9 +55,28 @@ interface AppState {
   clearChatHistory: () => void;
 }
 
+const savePetToIDB = async (pet: Pet) => {
+  try {
+    await idb.put('pet', pet);
+  } catch (error) {
+    console.error('Failed to save pet to IndexedDB:', error);
+  }
+};
+
+const saveMemoriesToIDB = async (memories: Memory[]) => {
+  try {
+    await idb.clear('memories');
+    for (const memory of memories) {
+      await idb.put('memories', memory);
+    }
+  } catch (error) {
+    console.error('Failed to save memories to IndexedDB:', error);
+  }
+};
+
 export const useStore = create<AppState>((set) => ({
-  pet: loadFromStorage<Pet>(STORAGE_KEYS.pet, DEMO_PET),
-  memories: loadFromStorage<Memory[]>(STORAGE_KEYS.memories, DEMO_MEMORIES),
+  pet: DEMO_PET,
+  memories: DEMO_MEMORIES,
   selectedMemoryId: '1',
   isPlaying: false,
   volume: 0.7,
@@ -93,63 +87,104 @@ export const useStore = create<AppState>((set) => ({
   aiInsights: JSON.parse(localStorage.getItem('ai_insights') || '[]'),
   lastInsightUpdate: localStorage.getItem('last_insight_update'),
   chatHistory: JSON.parse(localStorage.getItem('ai_chat_history') || '[]'),
+  isLoaded: false,
 
   selectMemory: (id) => set({ selectedMemoryId: id }),
+
   addMemory: (m) => set(s => {
     const newMemories = [...s.memories, m];
-    saveToStorage(STORAGE_KEYS.memories, newMemories);
+    saveMemoriesToIDB(newMemories);
     return { memories: newMemories };
   }),
+
   updateMemory: (m) => set(s => {
     const newMemories = s.memories.map(x => x.id === m.id ? m : x);
-    saveToStorage(STORAGE_KEYS.memories, newMemories);
+    saveMemoriesToIDB(newMemories);
     return { memories: newMemories };
   }),
+
   deleteMemory: (id) => set(s => {
     const newMemories = s.memories.filter(x => x.id !== id);
-    saveToStorage(STORAGE_KEYS.memories, newMemories);
+    saveMemoriesToIDB(newMemories);
     return { memories: newMemories };
   }),
+
   updatePet: (p) => {
-    saveToStorage(STORAGE_KEYS.pet, p);
+    savePetToIDB(p);
     set({ pet: p });
   },
+
   setPlaying: (v) => set({ isPlaying: v }),
   setVolume: (v) => set({ volume: v }),
+
   setApiKey: (key) => {
-    saveToStorage('gemini_api_key', key);
+    localStorage.setItem('gemini_api_key', key);
     set({ apiKey: key });
   },
+
   setAiModel: (model: string) => {
-    saveToStorage('gemini_ai_model', model);
+    localStorage.setItem('gemini_ai_model', model);
     set({ aiModel: model });
   },
+
   cycleTheme: () => set(s => {
     const themes: ThemeType[] = ['night', 'sunset', 'dawn'];
     const currentIndex = themes.indexOf(s.theme);
     const nextTheme = themes[(currentIndex + 1) % themes.length];
-    saveToStorage('app_theme', nextTheme);
+    localStorage.setItem('app_theme', nextTheme);
     return { theme: nextTheme };
   }),
+
   togglePlanetStyle: () => set(s => {
     const styles: ('minimal' | 'artistic' | 'blue')[] = ['minimal', 'artistic', 'blue'];
     const currentIndex = styles.indexOf(s.planetStyle);
     const nextStyle = styles[(currentIndex + 1) % styles.length];
-    saveToStorage('planet_style', nextStyle);
+    localStorage.setItem('planet_style', nextStyle);
     return { planetStyle: nextStyle };
   }),
+
   setAiInsights: (insights, date) => {
-    saveToStorage('ai_insights', insights);
-    saveToStorage('last_insight_update', date);
+    localStorage.setItem('ai_insights', JSON.stringify(insights));
+    localStorage.setItem('last_insight_update', date);
     set({ aiInsights: insights, lastInsightUpdate: date });
   },
+
   addChatMessage: (msg) => set(s => {
     const newHistory = [...s.chatHistory, msg];
-    saveToStorage('ai_chat_history', newHistory);
+    localStorage.setItem('ai_chat_history', JSON.stringify(newHistory));
     return { chatHistory: newHistory };
   }),
+
   clearChatHistory: () => {
     localStorage.removeItem('ai_chat_history');
     set({ chatHistory: [] });
   },
 }));
+
+export const initializeStore = async () => {
+  try {
+    const [pet, memories] = await Promise.all([
+      idb.get<Pet>('pet', '1'),
+      idb.getAll<Memory>('memories'),
+    ]);
+
+    if (pet) {
+      useStore.getState().updatePet(pet);
+    }
+
+    if (memories.length > 0) {
+      useStore.setState({ 
+        memories, 
+        selectedMemoryId: memories[0].id,
+        isLoaded: true 
+      });
+    } else {
+      useStore.setState({ isLoaded: true });
+    }
+  } catch (error) {
+    console.error('Failed to load from IndexedDB:', error);
+    useStore.setState({ isLoaded: true });
+  }
+};
+
+initializeStore();
