@@ -91,16 +91,6 @@ const savePetToIDB = async (pet: Pet) => {
   }
 };
 
-const savePetsToIDB = async (pets: Pet[]) => {
-  try {
-    // We store multiple pets in 'pet' store by ID
-    for (const pet of pets) {
-      await idb.put('pet', pet);
-    }
-  } catch (error) {
-    console.error('Failed to save pets to IndexedDB:', error);
-  }
-};
 
 const saveMemoriesToIDB = async (memories: Memory[]) => {
   try {
