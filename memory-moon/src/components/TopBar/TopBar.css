@@ -89,6 +89,37 @@
 .topbar__actions {
   display: flex;
   gap: 12px;
+  align-items: center;
+}
+
+.topbar__music-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.topbar__music-popup {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: -144px; /* Center 320px player under 32px icon: (320-32)/2 */
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.topbar__music-popup--visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+@keyframes music-slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .topbar__btn {

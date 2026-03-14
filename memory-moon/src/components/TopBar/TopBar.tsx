@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './TopBar.css';
+import MusicPlayer from '../MusicPlayer/MusicPlayer';
 
 interface TopBarProps {
   onSearch?: () => void;
-  onMusic?: () => void;
   onSettings?: () => void;
   onTogglePlanetStyle?: () => void;
   onPetProfile?: () => void;
@@ -15,8 +15,33 @@ interface TopBarProps {
   petName?: string;
 }
 
-const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onTogglePlanetStyle, onPetProfile, onAI, onSpace, isVisible, activeView = 'space', petAvatar, petName }) => {
+const TopBar: React.FC<TopBarProps> = ({ onSearch, onSettings, onTogglePlanetStyle, onPetProfile, onAI, onSpace, isVisible, activeView = 'space', petAvatar, petName }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMusicPlayerOpen, setIsMusicPlayerOpen] = useState(false);
+  const musicContainerRef = useRef<HTMLDivElement>(null);
+
+  // Close music player if topbar is hidden
+  useEffect(() => {
+    if (!isVisible) {
+      setIsMusicPlayerOpen(false);
+    }
+  }, [isVisible]);
+
+  // Click outside listener
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (musicContainerRef.current && !musicContainerRef.current.contains(event.target as Node)) {
+        setIsMusicPlayerOpen(false);
+      }
+    };
+
+    if (isMusicPlayerOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMusicPlayerOpen]);
 
   const handleNavClick = (callback: (() => void) | undefined) => {
     callback?.();
@@ -66,13 +91,22 @@ const TopBar: React.FC<TopBarProps> = ({ onSearch, onMusic, onSettings, onToggle
               <line x1="16.5" y1="16.5" x2="22" y2="22" />
             </svg>
           </button>
-          <button className="topbar__btn" onClick={onMusic} aria-label="Music">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 18V5l12-2v13" />
-              <circle cx="6" cy="18" r="3" />
-              <circle cx="18" cy="16" r="3" />
-            </svg>
-          </button>
+          <div className="topbar__music-container" ref={musicContainerRef}>
+            <button 
+              className={`topbar__btn ${isMusicPlayerOpen ? 'topbar__btn--active' : ''}`} 
+              onClick={() => setIsMusicPlayerOpen(!isMusicPlayerOpen)} 
+              aria-label="Music"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </svg>
+            </button>
+            <div className={`topbar__music-popup ${isMusicPlayerOpen ? 'topbar__music-popup--visible' : ''}`}>
+              <MusicPlayer isActive={true} />
+            </div>
+          </div>
           <button className="topbar__btn" onClick={onTogglePlanetStyle} aria-label="Toggle Planet Style">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />

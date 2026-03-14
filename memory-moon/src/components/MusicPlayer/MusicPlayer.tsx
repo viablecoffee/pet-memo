@@ -14,7 +14,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ isActive }) => {
   const currentTrack = tracks.find(t => t.id === currentTrackId) || tracks[0];
 
   // Get playback state from hook
-  const { position, duration, seek } = useAudio(currentTrack.url, isActive);
+  const { position, duration, seek } = useAudio(currentTrack.url);
 
   const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (duration === 0) return;
