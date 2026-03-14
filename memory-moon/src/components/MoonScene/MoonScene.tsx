@@ -121,6 +121,8 @@ const MemoryStars: React.FC = () => {
             position={pos}
             isSelected={isSelected}
             onClick={() => handleClick(memory.id)}
+            photoCount={memory.photos?.length || 0}
+            descriptionLength={memory.description?.length || 0}
           />
         );
       })}
@@ -132,10 +134,17 @@ const MemoryStar: React.FC<{
   position: [number, number, number];
   isSelected: boolean;
   onClick: () => void;
-}> = ({ position, isSelected, onClick }) => {
+  photoCount: number;
+  descriptionLength: number;
+}> = ({ position, isSelected, onClick, photoCount, descriptionLength }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = React.useState(false);
+
+  const maxPhotos = 5;
+  const maxDescLength = 200;
+  const photoScale = 1 + Math.min(photoCount, maxPhotos) * 0.1;
+  const descScale = 1 + Math.min(descriptionLength, maxDescLength) * 0.003;
 
   const glowTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
@@ -157,7 +166,7 @@ const MemoryStar: React.FC<{
     const baseScale = isSelected ? 1.5 : 1;
     const hoverScale = hovered ? 1.3 : 1;
     const pulse = Math.sin(t * 2) * 0.1 + 1;
-    const scale = baseScale * hoverScale * (isSelected ? pulse : 1);
+    const scale = baseScale * hoverScale * photoScale * descScale * (isSelected ? pulse : 1);
 
     if (meshRef.current) {
       meshRef.current.scale.setScalar(scale * 0.04);
