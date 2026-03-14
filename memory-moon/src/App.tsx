@@ -7,15 +7,18 @@ import Timeline from './components/Timeline/Timeline';
 import MemoryCard from './components/MemoryCard/MemoryCard';
 import MusicPlayer from './components/MusicPlayer/MusicPlayer';
 import AddMemoryModal from './components/AddMemoryModal/AddMemoryModal';
+import EditMemoryModal from './components/EditMemoryModal/EditMemoryModal';
 import PetProfile from './components/PetProfile/PetProfile';
 import AICompanion from './components/AICompanion/AICompanion';
 import { useStore } from './store/useStore';
+import type { Memory } from './types';
 
 type ViewType = 'space' | 'profile' | 'ai';
 
 const App: React.FC = () => {
-    const { pet, memories, selectedMemoryId, selectMemory, cycleTheme, togglePlanetStyle } = useStore();
+    const { pet, memories, selectedMemoryId, selectMemory, cycleTheme, togglePlanetStyle, deleteMemory } = useStore();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingMemory, setEditingMemory] = useState<Memory | null>(null);
     const [currentView, setCurrentView] = useState<ViewType>('space');
     const [isTopBarNear, setIsTopBarNear] = useState(false);
 
@@ -52,7 +55,11 @@ const App: React.FC = () => {
                             onSelect={selectMemory}
                             onAddClick={() => setIsModalOpen(true)}
                         />
-                        <MemoryCard memory={selectedMemory} />
+                        <MemoryCard 
+                            memory={selectedMemory} 
+                            onEdit={setEditingMemory}
+                            onDelete={deleteMemory}
+                        />
                         <MusicPlayer />
                     </>
                 );
@@ -81,6 +88,12 @@ const App: React.FC = () => {
             <AddMemoryModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
+            />
+
+            <EditMemoryModal
+                memory={editingMemory}
+                isOpen={!!editingMemory}
+                onClose={() => setEditingMemory(null)}
             />
         </div>
     );

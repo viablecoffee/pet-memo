@@ -4,22 +4,22 @@ import { useStore } from '../../store/useStore';
 import type { Memory } from '../../types';
 
 interface EditMemoryModalProps {
-  memory: Memory;
+  memory: Memory | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
 const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClose }) => {
   const { updateMemory } = useStore();
-  const [date, setDate] = useState(memory.date);
-  const [title, setTitle] = useState(memory.title);
-  const [description, setDescription] = useState(memory.description);
-  const [icon, setIcon] = useState(memory.emoji || '🐾');
-  const [photos, setPhotos] = useState<string[]>(memory.photos);
+  const [date, setDate] = useState(memory?.date || '');
+  const [title, setTitle] = useState(memory?.title || '');
+  const [description, setDescription] = useState(memory?.description || '');
+  const [icon, setIcon] = useState(memory?.emoji || '🐾');
+  const [photos, setPhotos] = useState<string[]>(memory?.photos || []);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && memory) {
       setDate(memory.date);
       setTitle(memory.title);
       setDescription(memory.description);
@@ -27,6 +27,8 @@ const EditMemoryModal: React.FC<EditMemoryModalProps> = ({ memory, isOpen, onClo
       setPhotos(memory.photos);
     }
   }, [isOpen, memory]);
+
+  if (!isOpen || !memory) return null;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;

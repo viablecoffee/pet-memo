@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './MemoryCard.css';
-import { useStore } from '../../store/useStore';
 import type { Memory } from '../../types';
-import EditMemoryModal from '../EditMemoryModal/EditMemoryModal';
 
 interface MemoryCardProps {
   memory: Memory | null;
+  onEdit?: (memory: Memory) => void;
+  onDelete?: (id: string) => void;
 }
 
 const formatDate = (dateStr: string) => {
@@ -13,19 +13,16 @@ const formatDate = (dateStr: string) => {
   return `${y} · ${m} · ${d}`;
 };
 
-const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
-  const { deleteMemory } = useStore();
+const MemoryCard: React.FC<MemoryCardProps> = ({ memory, onEdit, onDelete }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const prevIdRef = useRef<string | null>(null);
   const [photoIndex, setPhotoIndex] = useState(0);
-  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (!memory || !cardRef.current) return;
     if (prevIdRef.current === memory.id) return;
     prevIdRef.current = memory.id;
     setPhotoIndex(0);
-    setIsEditing(false);
 
     const el = cardRef.current;
     el.style.animation = 'none';
@@ -96,26 +93,20 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
         <div className="memory-card__actions">
           <button 
             className="action-btn" 
-            onClick={() => setIsEditing(true)}
+            onClick={() => onEdit?.(memory)}
             aria-label="Edit memory"
           >
             ✏️
           </button>
           <button 
             className="action-btn" 
-            onClick={() => deleteMemory(memory.id)}
+            onClick={() => onDelete?.(memory.id)}
             aria-label="Delete memory"
           >
             🗑
           </button>
         </div>
       </div>
-
-      <EditMemoryModal
-        memory={memory}
-        isOpen={isEditing}
-        onClose={() => setIsEditing(false)}
-      />
     </div>
   );
 };
