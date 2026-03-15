@@ -403,10 +403,14 @@ const MoonScene: React.FC<MoonSceneProps> = ({ onStarClick }) => {
     }
   }, [theme]);
 
+  const cameraZ = useMemo(() => {
+    return window.innerWidth <= 960 ? 8.5 : 6;
+  }, []);
+
   return (
     <div className={`moon-scene ${themeConfig.bgClass}`}>
       <Canvas
-        camera={{ position: [0, 0, 6], fov: 50 }}
+        camera={{ position: [0, 0, cameraZ], fov: 50 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent' }}
         onPointerMissed={() => selectMemory(null)}
@@ -432,7 +436,7 @@ const MoonScene: React.FC<MoonSceneProps> = ({ onStarClick }) => {
             enableRotate={true}
             enableDamping={true}
             dampingFactor={0.05}
-            minDistance={3}
+            minDistance={window.innerWidth <= 960 ? 4 : 3}
             maxDistance={12}
             minPolarAngle={0}
             maxPolarAngle={Math.PI}
