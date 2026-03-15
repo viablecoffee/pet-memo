@@ -136,7 +136,7 @@
     z-index: 9999;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.8s ease;
+    transition: opacity 1.5s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -155,26 +155,36 @@
 }
 
 .startup-logo {
-    width: 260px;
+    width: 468px;
     height: auto;
-    animation: startupLogoIn 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: startupLogoSequence 4s cubic-bezier(0.16, 1, 0.3, 1) both;
     filter: drop-shadow(0 0 30px rgba(200, 169, 110, 0.3));
 }
 
-@keyframes startupLogoIn {
-    from {
+@keyframes startupLogoSequence {
+    0% {
         opacity: 0;
-        transform: scale(0.9);
+        transform: scale(1);
     }
 
-    to {
+    30% {
         opacity: 1;
-        transform: scale(1);
+        transform: scale(1.04);
+    }
+
+    70% {
+        opacity: 1;
+        transform: scale(1.04);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(1.04);
     }
 }
 
 @media (max-width: 480px) {
     .startup-logo {
-        width: 180px;
+        width: 324px;
     }
 }

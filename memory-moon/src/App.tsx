@@ -88,7 +88,7 @@ const App: React.FC = () => {
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsInitialFade(false);
-        }, 1200);
+        }, 4000);
         return () => clearTimeout(timer);
     }, []);
 
