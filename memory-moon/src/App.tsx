@@ -27,6 +27,7 @@ const App: React.FC = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 960);
     const [showLeftPanel, setShowLeftPanel] = useState(window.innerWidth > 960);
     const [showRightPanel, setShowRightPanel] = useState(window.innerWidth > 960);
+    const [isInitialFade, setIsInitialFade] = useState(true);
 
     const selectedMemory = memories.find(m => m.id === selectedMemoryId) ?? null;
 
@@ -81,6 +82,14 @@ const App: React.FC = () => {
         checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Initial cinematic fade
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsInitialFade(false);
+        }, 1200);
+        return () => clearTimeout(timer);
     }, []);
 
     // Mouse proximity detector for TopBar
@@ -203,7 +212,7 @@ const App: React.FC = () => {
                 onClose={() => setIsAddPetModalOpen(false)}
             />
 
-            <div className={`transition-overlay ${isTransitioning ? 'transition-overlay--visible' : ''}`} />
+            <div className={`transition-overlay ${(isTransitioning || isInitialFade) ? 'transition-overlay--visible' : ''}`} />
         </div>
     );
 };
