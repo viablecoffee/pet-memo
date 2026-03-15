@@ -180,12 +180,14 @@
 }
 
 .topbar__avatar {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1.5px solid rgba(200, 169, 110, 0.5);
-  background: #1a1a2e;
+  flex-shrink: 0;
+  border: 1.5px solid var(--color-accent);
+  background: var(--color-bg2);
+  display: block;
 }
 
 .topbar__username {
@@ -347,13 +349,7 @@
   line-height: 1;
 }
 
-.topbar__avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1.5px solid var(--color-accent);
-  background: var(--color-bg2);
-}
+/* Avatar styles consolidated to top of file */
 
 .topbar__username {
   font-size: 14px;
@@ -484,6 +480,7 @@
   .topbar__avatar {
     width: 28px;
     height: 28px;
+    flex-shrink: 0;
   }
 
   .topbar__dropdown-icon {

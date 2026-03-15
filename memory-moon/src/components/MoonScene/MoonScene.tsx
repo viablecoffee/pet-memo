@@ -404,7 +404,7 @@ const MoonScene: React.FC<MoonSceneProps> = ({ onStarClick }) => {
   }, [theme]);
 
   const cameraZ = useMemo(() => {
-    return window.innerWidth <= 960 ? 8.5 : 6;
+    return window.innerWidth <= 960 ? 10.0 : 6;
   }, []);
 
   return (
