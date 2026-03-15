@@ -212,7 +212,13 @@ const App: React.FC = () => {
                 onClose={() => setIsAddPetModalOpen(false)}
             />
 
-            <div className={`transition-overlay ${(isTransitioning || isInitialFade) ? 'transition-overlay--visible' : ''}`} />
+            <div className={`transition-overlay ${(isTransitioning || isInitialFade) ? 'transition-overlay--visible' : ''}`}>
+                {isInitialFade && (
+                    <div className="startup-logo-container">
+                        <img src="/assets/images/opening_logo.png" alt="Pet Memo" className="startup-logo" />
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
