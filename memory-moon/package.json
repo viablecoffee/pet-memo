@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
+    "preview": "npm run build && wrangler dev",
+    "tauri": "tauri",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -25,12 +26,14 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.28.0",
     "@tauri-apps/cli": "^2",
     "@types/howler": "^2.2.12",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
     "typescript": "~5.8.3",
-    "vite": "^7.0.4"
+    "vite": "^7.0.4",
+    "wrangler": "^4.73.0"
   }
 }
