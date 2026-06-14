@@ -34,7 +34,7 @@
   /* CRITICAL: Set initial state matching keyframes to prevent flicker during animation-delay */
   opacity: 0;
   transform: translateY(30px) scale(0.98) translateZ(0);
-  animation: framePopIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: framePopIn 0.8s var(--ease-entrance) forwards;
   animation-delay: 0.1s;
   will-change: transform, opacity;
 }
@@ -43,6 +43,21 @@
   width: 100%;
   margin: 0 auto;
 }
+
+/* Staggered content reveal — also replays as the edit↔view transition,
+   since <main> is re-keyed on mode change. */
+.pet-identity,
+.pet-info-card,
+.memories-section,
+.letters-section {
+  opacity: 0;
+  animation: fadeInUp 0.5s var(--ease-entrance) forwards;
+}
+
+.pet-identity { animation-delay: 0.2s; }
+.pet-info-card { animation-delay: 0.3s; }
+.memories-section { animation-delay: 0.4s; }
+.letters-section { animation-delay: 0.5s; }
 
 .pet-identity {
   display: flex;
@@ -54,6 +69,11 @@
 .pet-avatar-wrapper {
   position: relative;
   margin-bottom: 20px;
+  transition: transform var(--dur-base) var(--ease-standard);
+}
+
+.pet-avatar-wrapper:hover {
+  transform: scale(1.03);
 }
 
 .pet-avatar-wrapper--editing {
@@ -67,7 +87,7 @@
   transform: translate(-50%, -50%);
   width: 120px;
   height: 120px;
-  background: radial-gradient(circle, rgba(212, 163, 115, 0.25) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(200, 169, 110, 0.25) 0%, transparent 70%);
   border-radius: 50%;
   animation: glow-pulse 3s ease-in-out infinite;
 }
@@ -91,9 +111,16 @@
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  border: 2px solid rgba(212, 163, 115, 0.6);
+  border: 2px solid rgba(200, 169, 110, 0.6);
   object-fit: cover;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  transition: border-color var(--dur-base) var(--ease-standard),
+              box-shadow var(--dur-base) var(--ease-standard);
+}
+
+.pet-avatar-wrapper:hover .pet-avatar {
+  border-color: var(--color-accent);
+  box-shadow: 0 4px 32px rgba(232, 201, 122, 0.4);
 }
 
 .pet-avatar-overlay {
@@ -164,8 +191,23 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 16px;
+  /* Negative margin + matching padding lets the hover tint extend without
+     shifting the resting layout. */
+  margin: 0 -10px;
+  padding: 4px 10px 16px;
+  border-radius: var(--radius-sm);
   border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+  transition: background var(--dur-fast) var(--ease-standard),
+              transform var(--dur-fast) var(--ease-standard);
+}
+
+.info-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateX(4px);
+}
+
+.info-item:hover .info-value {
+  color: var(--color-accent);
 }
 
 .info-item:last-child {
@@ -218,7 +260,7 @@
 
 .memories-count {
   font-size: 14px;
-  color: #d4a373;
+  color: var(--color-accent);
   font-weight: 600;
 }
 
@@ -267,7 +309,7 @@
   perspective: 1000px;
   will-change: transform;
   /* Momentum-friendly easing */
-  transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+  transition-timing-function: var(--ease-entrance);
 }
 
 .memories-gallery.dragging {
@@ -319,7 +361,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--dur-fast) var(--ease-standard);
   flex-shrink: 0;
   z-index: 10;
 }
@@ -333,17 +375,17 @@
 }
 
 .gallery-nav:hover {
-  background: rgba(212, 163, 115, 0.8);
-  border-color: #d4a373;
+  background: rgba(200, 169, 110, 0.8);
+  border-color: var(--color-accent);
   transform: translateY(-50%) scale(1.1);
 }
 
 .memory-highlight-item {
   flex: 0 0 calc((100% - 24px) / 3);
   cursor: pointer;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  transition: transform 0.4s var(--ease-entrance), opacity 0.3s ease;
   transform-style: preserve-3d;
-  animation: gallerySlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: gallerySlideIn 0.5s var(--ease-entrance) forwards;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(0, 0, 0, 0.4);
   padding: 4px;
@@ -381,12 +423,12 @@
   aspect-ratio: 1;
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid rgba(212, 163, 115, 0.2);
+  border: 1px solid rgba(200, 169, 110, 0.2);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .memory-highlight-item:hover .memory-highlight-img {
-  border-color: rgba(212, 163, 115, 0.5);
+  border-color: rgba(200, 169, 110, 0.5);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
@@ -395,7 +437,7 @@
   aspect-ratio: 1;
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid rgba(212, 163, 115, 0.2);
+  border: 1px solid rgba(200, 169, 110, 0.2);
 }
 
 .memory-highlight-img img {
@@ -426,16 +468,46 @@
 .memory-highlight-placeholder {
   width: 100%;
   aspect-ratio: 1;
-  background: linear-gradient(135deg, rgba(212, 163, 115, 0.2) 0%, rgba(212, 163, 115, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(200, 169, 110, 0.2) 0%, rgba(200, 169, 110, 0.05) 100%);
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(212, 163, 115, 0.2);
+  border: 1px solid rgba(200, 169, 110, 0.2);
 }
 
 .memory-emoji {
   font-size: 32px;
+}
+
+/* Empty state — mirrors MemoryCard's floating-icon empty state */
+.memories-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
+  text-align: center;
+}
+
+.memories-empty-icon {
+  font-size: 36px;
+  animation: float-icon 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(200, 169, 110, 0.4));
+}
+
+.memories-empty-state p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.memories-empty-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.05em;
 }
 
 .pet-breed {
@@ -582,7 +654,7 @@
 
 .dropdown-trigger:hover,
 .dropdown-trigger--open {
-  border-color: #d4a373;
+  border-color: var(--color-accent);
   background: rgba(255, 255, 255, 0.12);
 }
 
@@ -608,7 +680,7 @@
   padding: 6px;
   z-index: 100;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-  animation: dropdownFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: dropdownFadeIn 0.3s var(--ease-entrance) forwards;
   will-change: transform, opacity;
 }
 
@@ -639,15 +711,15 @@
 }
 
 .dropdown-option--selected {
-  background: rgba(212, 163, 115, 0.2);
-  color: #d4a373;
+  background: rgba(200, 169, 110, 0.2);
+  color: var(--color-accent);
   font-weight: 600;
 }
 
 .edit-form-item input:focus,
 .edit-form-item select:focus {
   outline: none;
-  border-color: #d4a373;
+  border-color: var(--color-accent);
 }
 
 .edit-actions {
@@ -672,7 +744,7 @@
 
 .edit-save-btn {
   padding: 10px 20px;
-  background: linear-gradient(135deg, #d4a373 0%, #c49363 100%);
+  background: linear-gradient(135deg, var(--color-accent) 0%, #c49363 100%);
   border: none;
   border-radius: 8px;
   color: #1a1a2e;
@@ -882,4 +954,130 @@
 .tag-input-field:focus {
   outline: none;
   box-shadow: none !important;
+}
+
+/* ── Letters section (给它的信) ── */
+.letters-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 24px;
+  margin-top: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.letters-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.letters-header .section-title {
+  margin: 0;
+}
+
+.letter-compose-btn {
+  padding: 8px 16px;
+  background: rgba(200, 169, 110, 0.15);
+  border: 1px solid rgba(200, 169, 110, 0.35);
+  border-radius: 20px;
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform var(--dur-fast) var(--ease-standard),
+              background var(--dur-fast) var(--ease-standard);
+}
+
+.letter-compose-btn:hover {
+  background: rgba(200, 169, 110, 0.25);
+  transform: translateY(-1px);
+}
+
+.letters-empty {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  font-style: italic;
+  text-align: center;
+  padding: 12px;
+}
+
+.letters-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.letter-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+  width: 100%;
+  transition: background var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-fast) var(--ease-standard),
+              transform var(--dur-fast) var(--ease-standard);
+}
+
+.letter-item:not(:disabled):hover {
+  background: rgba(200, 169, 110, 0.1);
+  border-color: rgba(200, 169, 110, 0.3);
+  transform: translateX(3px);
+}
+
+.letter-item--locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.letter-item--ready {
+  border-color: rgba(232, 201, 122, 0.45);
+  box-shadow: 0 0 16px rgba(232, 201, 122, 0.15);
+}
+
+.letter-item-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.letter-item-title {
+  flex: 1;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.letter-item-date {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.letter-item--ready .letter-item-date {
+  color: var(--color-accent);
+}
+
+/* ── Memorial ── */
+.pet-memorial-ribbon {
+  margin-top: 12px;
+  padding: 5px 14px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: #d9c8ff;
+  background: rgba(180, 150, 255, 0.12);
+  border: 1px solid rgba(180, 150, 255, 0.3);
+  border-radius: 999px;
+}
+
+.edit-label-hint {
+  opacity: 0.5;
+  text-transform: none;
+  font-weight: 400;
 }

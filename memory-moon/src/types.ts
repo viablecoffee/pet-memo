@@ -9,6 +9,15 @@ export interface Memory {
   emoji?: string;
 }
 
+export interface Letter {
+  id: string;
+  title?: string;
+  message: string;
+  createdDate: string; // "YYYY-MM-DD"
+  openDate: string;    // "YYYY-MM-DD" — sealed until this day
+  opened?: boolean;
+}
+
 export interface Pet {
   id: string;
   name: string;
@@ -22,6 +31,7 @@ export interface Pet {
   color?: string;
   hobbies?: string;
   favoriteFood?: string;
+  letters?: Letter[];
   aiChatHistory?: { role: 'user' | 'model'; text: string }[];
   aiInsights?: { label: string; text: string }[];
   lastInsightUpdate?: string | null;

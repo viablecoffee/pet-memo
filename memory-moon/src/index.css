@@ -26,7 +26,25 @@
   --radius-card: 16px;
   --radius-sm:   8px;
   --blur-glass:  blur(14px);
-  --transition:  0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Motion system ────────────────────────────
+     Named easing curves + durations. One source of truth so every
+     transition/animation shares the same feel and future features
+     pick a named curve instead of inventing a new bezier.
+     Mirrored for JS/R3F in src/motion.ts. */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);   /* general moves, hover */
+  --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);  /* things appearing (overshoot-out) */
+  --ease-spring:   cubic-bezier(0.19, 1, 0.22, 1); /* snappy pops, popups */
+  --ease-exit:     cubic-bezier(0.4, 0, 1, 1);     /* things leaving */
+
+  --dur-fast:      200ms;  /* hover / press feedback */
+  --dur-base:      350ms;  /* default transitions */
+  --dur-slow:      600ms;  /* panel slides, large reveals */
+  --dur-cinematic: 1500ms; /* opening / camera intro */
+
+  /* Back-compat shorthand — now derived from the tokens above so every
+     existing `var(--transition)` consumer upgrades for free. */
+  --transition:  var(--dur-base) var(--ease-standard);
 }
 
 /* ═══════════════════════════════════════════
@@ -82,6 +100,47 @@ img {
 }
 
 /* ═══════════════════════════════════════════
+   Interaction utilities
+   Opt-in classes so any button/card gets a consistent, tokenized
+   hover-raise + press feel without re-implementing it each time.
+═══════════════════════════════════════════ */
+.u-interactive {
+  transition: transform var(--dur-fast) var(--ease-standard),
+              box-shadow var(--dur-fast) var(--ease-standard),
+              filter var(--dur-fast) var(--ease-standard);
+}
+.u-interactive:hover  { transform: translateY(-2px); }
+.u-interactive:active { transform: translateY(0) scale(0.98); }
+
+.u-glow:hover { box-shadow: 0 0 16px var(--color-glow); }
+
+/* Universal tactile feedback on press. Uses filter (not transform) so it
+   never fights buttons that rely on transform for positioning
+   (e.g. .photo-nav / .gallery-nav use translateY(-50%) to center). */
+button { transition: filter var(--dur-fast) var(--ease-standard); }
+button:active { filter: brightness(0.92); }
+
+/* ═══════════════════════════════════════════
+   Skeleton / loading shimmer
+   Promoted from AICompanion so any async view (image loads, future
+   data fetches) shares one loading primitive — see <Skeleton/>.
+═══════════════════════════════════════════ */
+.skeleton {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.03) 25%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes loading-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ═══════════════════════════════════════════
    Scrollbar
 ═══════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 4px; }
@@ -131,4 +190,22 @@ img {
 @keyframes moon-glow-pulse {
   0%, 100% { filter: drop-shadow(0 0 30px rgba(200, 169, 110, 0.4)); }
   50%       { filter: drop-shadow(0 0 55px rgba(200, 169, 110, 0.7)); }
+}
+
+/* ═══════════════════════════════════════════
+   Reduced Motion
+   Neutralizes the infinite ambient loops (twinkle, aurora-border,
+   moon-glow-pulse, bird-fly, float-icon, pulse-dot, loading-shimmer…)
+   and collapses transitions for users who ask for less motion.
+   The 3D canvas can't be reached by CSS — MoonScene gates its
+   auto-rotate / parallax / star-pulse via prefersReducedMotion()
+   from src/motion.ts.
+═══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

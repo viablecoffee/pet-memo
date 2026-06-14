@@ -145,8 +145,12 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory, onEdit, onDelete }) => 
             <img src={memory.photos[photoIndex]} alt={memory.title} className="memory-card__photo" />
             {memory.photos.length > 1 && (
               <>
-                <button className="photo-nav photo-nav--prev" onClick={goToPrev}>←</button>
-                <button className="photo-nav photo-nav--next" onClick={goToNext}>→</button>
+                <button className="photo-nav photo-nav--prev" onClick={goToPrev} aria-label="Previous photo">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                </button>
+                <button className="photo-nav photo-nav--next" onClick={goToNext} aria-label="Next photo">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </button>
                 <div className="photo-indicator">
                   {memory.photos.map((_, i) => (
                     <span key={i} className={`photo-dot ${i === photoIndex ? 'active' : ''}`} />

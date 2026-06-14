@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Memory, Pet, Track } from '../types';
+import type { Memory, Pet, Track, Letter } from '../types';
 import idb from './idb';
 
 const DEMO_PET: Pet = {
@@ -40,12 +40,32 @@ const DEMO_TRACKS: Track[] = [
 export type ThemeType = 'night' | 'sunset' | 'dawn';
 export type LoopMode = 'single' | 'list' | 'random';
 
+export type ToastType = 'success' | 'error' | 'info';
+export interface Toast {
+  id: string;
+  message: string;
+  type: ToastType;
+  duration: number;
+}
+
+export interface ConfirmOptions {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  tone?: 'default' | 'danger';
+}
+interface ConfirmRequest extends ConfirmOptions {
+  _resolve: (ok: boolean) => void;
+}
+
 interface AppState {
   pets: Pet[];
   currentPetId: string;
   pet: Pet;
   memories: Memory[];
   selectedMemoryId: string | null;
+  focusedMemoryId: string | null;
   isPlaying: boolean;
   volume: number;
   apiKey: string;
@@ -60,13 +80,18 @@ interface AppState {
   tracks: Track[];
   currentTrackId: string;
   loopMode: LoopMode;
+  toasts: Toast[];
+  confirm: ConfirmRequest | null;
   selectMemory: (id: string | null) => void;
+  setFocusedMemory: (id: string | null) => void;
   addMemory: (m: Memory) => void;
   updateMemory: (m: Memory) => void;
   deleteMemory: (id: string) => void;
   updatePet: (p: Pet) => void;
   addPet: (p: Pet) => void;
   deletePet: (id: string) => void;
+  addLetter: (letter: Letter) => void;
+  openLetter: (id: string) => void;
   setCurrentPet: (id: string) => Promise<void>;
   setTransitioning: (v: boolean) => void;
   setPlaying: (v: boolean) => void;
@@ -81,6 +106,10 @@ interface AppState {
   setCurrentTrack: (id: string) => void;
   setLoopMode: (mode: LoopMode) => void;
   nextTrack: () => void;
+  addToast: (t: { message: string; type?: ToastType; duration?: number }) => void;
+  dismissToast: (id: string) => void;
+  requestConfirm: (opts: ConfirmOptions) => Promise<boolean>;
+  resolveConfirm: (ok: boolean) => void;
 }
 
 const savePetToIDB = async (pet: Pet) => {
@@ -108,6 +137,7 @@ export const useStore = create<AppState>((set) => ({
   pet: DEMO_PET,
   memories: DEMO_MEMORIES,
   selectedMemoryId: '1',
+  focusedMemoryId: null,
   isPlaying: true, // Default to true for auto-play
   volume: parseFloat(localStorage.getItem('app_volume') || '0.7'),
   apiKey: localStorage.getItem('gemini_api_key') || '',
@@ -122,26 +152,39 @@ export const useStore = create<AppState>((set) => ({
   tracks: DEMO_TRACKS,
   currentTrackId: localStorage.getItem('current_track_id') || '1',
   loopMode: (localStorage.getItem('app_loop_mode') as LoopMode) || 'list',
+  toasts: [],
+  confirm: null,
 
   selectMemory: (id) => set({ selectedMemoryId: id }),
 
-  addMemory: (m) => set(s => {
-    const newMemories = [...s.memories, m];
-    saveMemoriesToIDB(newMemories);
-    return { memories: newMemories };
-  }),
+  setFocusedMemory: (id) => set({ focusedMemoryId: id }),
 
-  updateMemory: (m) => set(s => {
-    const newMemories = s.memories.map(x => x.id === m.id ? m : x);
-    saveMemoriesToIDB(newMemories);
-    return { memories: newMemories };
-  }),
+  addMemory: (m) => {
+    set(s => {
+      const newMemories = [...s.memories, m];
+      saveMemoriesToIDB(newMemories);
+      return { memories: newMemories };
+    });
+    useStore.getState().addToast({ message: 'Memory created ✦', type: 'success' });
+  },
 
-  deleteMemory: (id) => set(s => {
-    const newMemories = s.memories.filter(x => x.id !== id);
-    saveMemoriesToIDB(newMemories);
-    return { memories: newMemories };
-  }),
+  updateMemory: (m) => {
+    set(s => {
+      const newMemories = s.memories.map(x => x.id === m.id ? m : x);
+      saveMemoriesToIDB(newMemories);
+      return { memories: newMemories };
+    });
+    useStore.getState().addToast({ message: 'Memory updated', type: 'success' });
+  },
+
+  deleteMemory: (id) => {
+    set(s => {
+      const newMemories = s.memories.filter(x => x.id !== id);
+      saveMemoriesToIDB(newMemories);
+      return { memories: newMemories };
+    });
+    useStore.getState().addToast({ message: 'Memory removed', type: 'info' });
+  },
 
   updatePet: (p) => {
     savePetToIDB(p);
@@ -149,47 +192,59 @@ export const useStore = create<AppState>((set) => ({
       pet: p,
       pets: s.pets.map(item => item.id === p.id ? p : item)
     }));
+    useStore.getState().addToast({ message: 'Profile saved', type: 'success' });
   },
 
-  addPet: (p) => set(s => {
-    if (s.pets.length >= 6) return s;
-    const petWithAvatar = { ...p, avatarUrl: p.avatarUrl || '/assets/images/milo_avatar.jpg' };
-    const newPets = [...s.pets, petWithAvatar];
-    savePetToIDB(petWithAvatar);
-    localStorage.setItem('current_pet_id', p.id);
-    return {
-      pets: newPets,
-      currentPetId: p.id,
-      pet: petWithAvatar,
-      memories: [],
-      selectedMemoryId: null
-    };
-  }),
-
-  deletePet: (id) => set(s => {
-    if (s.pets.length <= 1) return s;
-    const newPets = s.pets.filter(p => p.id !== id);
-    idb.delete('pet', id);
-
-    // Also cleanup memories for this pet in IDB
-    // (Actual deletion logic should be more thorough but this is okay for now)
-
-    let nextPetId = s.currentPetId;
-    if (id === s.currentPetId) {
-      nextPetId = newPets[0].id;
-      localStorage.setItem('current_pet_id', nextPetId);
+  addPet: (p) => {
+    if (useStore.getState().pets.length >= 6) {
+      useStore.getState().addToast({ message: 'Pet limit reached (max 6)', type: 'error' });
+      return;
     }
+    set(s => {
+      const petWithAvatar = { ...p, avatarUrl: p.avatarUrl || '/assets/images/milo_avatar.jpg' };
+      const newPets = [...s.pets, petWithAvatar];
+      savePetToIDB(petWithAvatar);
+      localStorage.setItem('current_pet_id', p.id);
+      return {
+        pets: newPets,
+        currentPetId: p.id,
+        pet: petWithAvatar,
+        memories: [],
+        selectedMemoryId: null
+      };
+    });
+    useStore.getState().addToast({ message: `Welcome, ${p.name}! 🐾`, type: 'success' });
+  },
 
-    const nextPet = newPets.find(p => p.id === nextPetId) || newPets[0];
+  deletePet: (id) => {
+    const { pets } = useStore.getState();
+    if (pets.length <= 1) return;
+    const removedName = pets.find(p => p.id === id)?.name ?? 'Pet';
+    set(s => {
+      const newPets = s.pets.filter(p => p.id !== id);
+      idb.delete('pet', id);
 
-    return {
-      pets: newPets,
-      currentPetId: nextPet.id,
-      pet: nextPet,
-      memories: id === s.currentPetId ? [] : s.memories,
-      selectedMemoryId: id === s.currentPetId ? null : s.selectedMemoryId
-    };
-  }),
+      // Also cleanup memories for this pet in IDB
+      // (Actual deletion logic should be more thorough but this is okay for now)
+
+      let nextPetId = s.currentPetId;
+      if (id === s.currentPetId) {
+        nextPetId = newPets[0].id;
+        localStorage.setItem('current_pet_id', nextPetId);
+      }
+
+      const nextPet = newPets.find(p => p.id === nextPetId) || newPets[0];
+
+      return {
+        pets: newPets,
+        currentPetId: nextPet.id,
+        pet: nextPet,
+        memories: id === s.currentPetId ? [] : s.memories,
+        selectedMemoryId: id === s.currentPetId ? null : s.selectedMemoryId
+      };
+    });
+    useStore.getState().addToast({ message: `${removedName} removed`, type: 'info' });
+  },
 
   setCurrentPet: async (id) => {
     const s = useStore.getState();
@@ -298,6 +353,24 @@ export const useStore = create<AppState>((set) => ({
       pets: s.pets.map(p => p.id === updatedPet.id ? updatedPet : p)
     };
   }),
+
+  addLetter: (letter) => {
+    set(s => {
+      const updatedPet = { ...s.pet, letters: [...(s.pet.letters ?? []), letter] };
+      savePetToIDB(updatedPet);
+      return { pet: updatedPet, pets: s.pets.map(p => p.id === updatedPet.id ? updatedPet : p) };
+    });
+    useStore.getState().addToast({ message: '信已封存 ✦', type: 'success' });
+  },
+
+  openLetter: (id) => set(s => {
+    const updatedPet = {
+      ...s.pet,
+      letters: (s.pet.letters ?? []).map(l => l.id === id ? { ...l, opened: true } : l),
+    };
+    savePetToIDB(updatedPet);
+    return { pet: updatedPet, pets: s.pets.map(p => p.id === updatedPet.id ? updatedPet : p) };
+  }),
   setCurrentTrack: (id) => {
     localStorage.setItem('current_track_id', id);
     set({ currentTrackId: id });
@@ -326,6 +399,23 @@ export const useStore = create<AppState>((set) => ({
     localStorage.setItem('current_track_id', nextTrackId);
     return { currentTrackId: nextTrackId };
   }),
+
+  addToast: ({ message, type = 'info', duration = 3500 }) => set(s => {
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    return { toasts: [...s.toasts, { id, message, type, duration }] };
+  }),
+
+  dismissToast: (id) => set(s => ({ toasts: s.toasts.filter(t => t.id !== id) })),
+
+  requestConfirm: (opts) => new Promise<boolean>((resolve) => {
+    set({ confirm: { ...opts, _resolve: resolve } });
+  }),
+
+  resolveConfirm: (ok) => {
+    const c = useStore.getState().confirm;
+    if (c) c._resolve(ok);
+    set({ confirm: null });
+  },
 }));
 
 export const initializeStore = async () => {
