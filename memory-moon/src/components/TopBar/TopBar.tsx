@@ -25,7 +25,7 @@ const TopBar: React.FC<TopBarProps> = ({
   isVisible, isMusicOpen, onMusicToggle, onHoverChange,
   activeView = 'space', petAvatar, petName, onAddPet
 }) => {
-  const { pets, currentPetId, setCurrentPet, deletePet } = useStore();
+  const { pets, currentPetId, setCurrentPet, deletePet, requestConfirm } = useStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isPetDropdownOpen, setIsPetDropdownOpen] = useState(false);
   const musicContainerRef = useRef<HTMLDivElement>(null);
@@ -50,9 +50,14 @@ const TopBar: React.FC<TopBarProps> = ({
     onAddPet?.();
   };
 
-  const handleDeletePet = (e: React.MouseEvent, id: string, name: string) => {
+  const handleDeletePet = async (e: React.MouseEvent, id: string, name: string) => {
     e.stopPropagation();
-    const confirmed = window.confirm(`Your pet ${name}'s data will be permanently deleted and cannot be recovered!\nAre you sure you want to delete?`);
+    const confirmed = await requestConfirm({
+      title: 'Delete pet?',
+      message: `${name}'s data will be permanently deleted and cannot be recovered.`,
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
     if (confirmed) {
       deletePet(id);
     }

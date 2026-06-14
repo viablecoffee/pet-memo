@@ -33,7 +33,7 @@
   /* CRITICAL: Set initial state matching keyframes to prevent flicker during animation-delay */
   opacity: 0;
   transform: translateY(30px) scale(0.98) translateZ(0);
-  animation: framePopIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: framePopIn 0.8s var(--ease-entrance) forwards;
   animation-delay: 0.1s;
   will-change: transform, opacity;
 }
@@ -89,7 +89,7 @@
   z-index: 100;
   text-align: left;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-  animation: dropdownFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: dropdownFadeIn 0.3s var(--ease-entrance) forwards;
 }
 
 .ai-settings-panel h4 {
@@ -249,22 +249,7 @@
   gap: 12px;
 }
 
-.skeleton {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite;
-  border-radius: 8px;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
+/* .skeleton + loading-shimmer promoted to index.css (global primitive) */
 
 /* --- Chat Section (Center) --- */
 .ai-chat {
@@ -292,7 +277,7 @@
   display: flex;
   gap: 12px;
   max-width: 85%;
-  animation: msgPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: msgPop 0.3s var(--ease-entrance) forwards;
 }
 
 @keyframes msgPop {

@@ -27,6 +27,7 @@ const NUM_SHOOTING = 3;
 
 const StarField: React.FC = () => {
   const { theme } = useStore();
+  const isMemorial = useStore(s => !!s.pet.passDate);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
   const starsRef = useRef<Star[]>([]);
@@ -34,6 +35,14 @@ const StarField: React.FC = () => {
   const timeRef = useRef(0);
 
   const themeColors = React.useMemo(() => {
+    if (isMemorial) {
+      // Soft lavender "rainbow bridge" palette for a pet that has passed.
+      return {
+        star: 'rgba(214, 196, 255,',
+        glow: 'rgba(186, 162, 255,',
+        shooting: 'rgba(232, 216, 255,'
+      };
+    }
     switch (theme) {
       case 'sunset':
         return {
@@ -54,7 +63,7 @@ const StarField: React.FC = () => {
           shooting: 'rgba(255, 230, 150,'
         };
     }
-  }, [theme]);
+  }, [theme, isMemorial]);
 
   useEffect(() => {
     const canvas = canvasRef.current!;

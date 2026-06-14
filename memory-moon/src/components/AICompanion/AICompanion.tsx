@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './AICompanion.css';
 import { useStore } from '../../store/useStore';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import Skeleton from '../Skeleton/Skeleton';
 
 const formatMessage = (text: string): string => {
   if (!text) return '';
@@ -224,9 +225,9 @@ const AICompanion: React.FC = () => {
                 </div>
               ) : isGeneratingInsights ? (
                 <div className="ai-insights-loading">
-                  <div className="skeleton" style={{ height: '60px' }}></div>
-                  <div className="skeleton" style={{ height: '60px' }}></div>
-                  <div className="skeleton" style={{ height: '60px' }}></div>
+                  <Skeleton height={60} />
+                  <Skeleton height={60} />
+                  <Skeleton height={60} />
                 </div>
               ) : aiInsights.length > 0 ? (
                 aiInsights.map((insight, idx) => (
