@@ -10,13 +10,22 @@ import EditMemoryModal from './components/EditMemoryModal/EditMemoryModal';
 import PetProfile from './components/PetProfile/PetProfile';
 import AICompanion from './components/AICompanion/AICompanion';
 import AddPetModal from './components/AddPetModal/AddPetModal';
+import ToastHost from './components/Toast/ToastHost';
+import ConfirmDialog from './components/ConfirmDialog/ConfirmDialog';
+import OnThisDayModal from './components/OnThisDayModal/OnThisDayModal';
+import LetterReader from './components/Letters/LetterReader';
+import MemorialModal from './components/MemorialModal/MemorialModal';
+import TourControl from './components/TourControl/TourControl';
 import { useStore } from './store/useStore';
-import type { Memory } from './types';
+import { getOnThisDay, getDueLetters, todayYMD, isAnniversaryToday } from './utils/anniversary';
+import { sortMemoriesByDate } from './utils/memories';
+import type { OnThisDayMatch } from './utils/anniversary';
+import type { Memory, Letter } from './types';
 
 type ViewType = 'space' | 'profile' | 'ai';
 
 const App: React.FC = () => {
-    const { pet, memories, selectedMemoryId, selectMemory, cycleTheme, togglePlanetStyle, deleteMemory, isTransitioning } = useStore();
+    const { pet, memories, selectedMemoryId, selectMemory, setFocusedMemory, cycleTheme, togglePlanetStyle, deleteMemory, isTransitioning, isLoaded } = useStore();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAddPetModalOpen, setIsAddPetModalOpen] = useState(false);
     const [editingMemory, setEditingMemory] = useState<Memory | null>(null);
@@ -28,19 +37,42 @@ const App: React.FC = () => {
     const [showLeftPanel, setShowLeftPanel] = useState(window.innerWidth > 960);
     const [showRightPanel, setShowRightPanel] = useState(window.innerWidth > 960);
     const [isInitialFade, setIsInitialFade] = useState(true);
+    const [showOnThisDay, setShowOnThisDay] = useState(false);
+    const [onThisDayMatches, setOnThisDayMatches] = useState<OnThisDayMatch[]>([]);
+    const [dueLetter, setDueLetter] = useState<Letter | null>(null);
+    const [showLetterReader, setShowLetterReader] = useState(false);
+    const [tourActive, setTourActive] = useState(false);
+    const [tourIndex, setTourIndex] = useState(0);
+    const [showMemorial, setShowMemorial] = useState(false);
 
     const selectedMemory = memories.find(m => m.id === selectedMemoryId) ?? null;
 
     const leftPanelRef = useRef<HTMLDivElement>(null);
     const rightPanelRef = useRef<HTMLDivElement>(null);
+    const surfacedRef = useRef(false);
 
     const handleSelectMemory = (id: string) => {
+        if (tourActive) setTourActive(false); // a manual pick ends the tour
         if (selectedMemoryId === id && showRightPanel) {
             setShowRightPanel(false);
+            setFocusedMemory(null);
         } else {
             selectMemory(id);
             setShowRightPanel(true);
+            setFocusedMemory(id);
         }
+    };
+
+    const startTour = () => {
+        setCurrentView('space');
+        setTourIndex(0);
+        setTourActive(true);
+    };
+
+    const stopTour = () => {
+        setTourActive(false);
+        setFocusedMemory(null);
+        setShowRightPanel(false);
     };
 
     // Smart click-outside: collapse panels when clicking outside
@@ -91,6 +123,61 @@ const App: React.FC = () => {
         }, 4000);
         return () => clearTimeout(timer);
     }, []);
+
+    // On-load surfacing (once, after the opening fade + data loaded):
+    // a due letter takes priority over an "on this day" memory; on-this-day
+    // is shown at most once per calendar day.
+    useEffect(() => {
+        if (isInitialFade || !isLoaded || surfacedRef.current) return;
+        surfacedRef.current = true;
+
+        const { pet: curPet, memories: curMemories } = useStore.getState();
+        const today = todayYMD();
+
+        // Memorial anniversary — the most significant, surfaced first.
+        if (isAnniversaryToday(curPet.passDate) && localStorage.getItem('memorial_shown') !== today) {
+            setShowMemorial(true);
+            localStorage.setItem('memorial_shown', today);
+            return;
+        }
+
+        const due = getDueLetters(curPet.letters, today);
+        if (due.length > 0) {
+            setDueLetter(due[0]);
+            setShowLetterReader(true);
+            return;
+        }
+
+        if (localStorage.getItem('onThisDay_shown') === today) return;
+        const matches = getOnThisDay(curMemories);
+        if (matches.length > 0) {
+            setOnThisDayMatches(matches);
+            setShowOnThisDay(true);
+            localStorage.setItem('onThisDay_shown', today);
+        }
+    }, [isInitialFade, isLoaded]);
+
+    // Guided tour: fly the camera through memories chronologically, dwelling on each.
+    useEffect(() => {
+        if (!tourActive) return;
+        const sorted = sortMemoriesByDate(useStore.getState().memories);
+        if (sorted.length < 2) { setTourActive(false); return; }
+        const current = sorted[tourIndex];
+        if (!current) { setTourActive(false); setFocusedMemory(null); return; }
+        selectMemory(current.id);
+        setFocusedMemory(current.id);
+        setShowRightPanel(true);
+        const timer = setTimeout(() => {
+            if (tourIndex + 1 < sorted.length) {
+                setTourIndex(tourIndex + 1);
+            } else {
+                setTourActive(false);
+                setFocusedMemory(null);
+                setShowRightPanel(false);
+            }
+        }, 3200);
+        return () => clearTimeout(timer);
+    }, [tourActive, tourIndex]);
 
     // Mouse proximity detector for TopBar
     useEffect(() => {
@@ -170,7 +257,7 @@ const App: React.FC = () => {
     return (
         <div className={`app ${currentView !== 'space' ? 'app--scrolling' : ''}`}>
             <StarField />
-            <MoonScene onStarClick={handleSelectMemory} />
+            <MoonScene onStarClick={handleSelectMemory} playIntro={isInitialFade} />
             <div className="app-ui">
                 <TopBar
                     isVisible={isMobile || currentView !== 'space' || isTopBarNear || isMusicOpen || isTopBarHovered}
@@ -194,6 +281,15 @@ const App: React.FC = () => {
                     onAddPet={() => setIsAddPetModalOpen(true)}
                 />
                 {renderMainContent()}
+                {currentView === 'space' && (
+                    <TourControl
+                        active={tourActive}
+                        index={tourIndex}
+                        total={memories.length}
+                        onStart={startTour}
+                        onStop={stopTour}
+                    />
+                )}
             </div>
 
             <AddMemoryModal
@@ -210,6 +306,32 @@ const App: React.FC = () => {
             <AddPetModal
                 isOpen={isAddPetModalOpen}
                 onClose={() => setIsAddPetModalOpen(false)}
+            />
+
+            <ToastHost />
+            <ConfirmDialog />
+
+            <OnThisDayModal
+                isOpen={showOnThisDay}
+                matches={onThisDayMatches}
+                onClose={() => setShowOnThisDay(false)}
+                onGoto={(id) => {
+                    selectMemory(id);
+                    setFocusedMemory(id);
+                    setCurrentView('space');
+                    setShowRightPanel(true);
+                    setShowOnThisDay(false);
+                }}
+            />
+            <LetterReader
+                isOpen={showLetterReader}
+                letter={dueLetter}
+                onClose={() => setShowLetterReader(false)}
+            />
+            <MemorialModal
+                isOpen={showMemorial}
+                pet={pet}
+                onClose={() => setShowMemorial(false)}
             />
 
             <div className={`transition-overlay ${(isTransitioning || isInitialFade) ? 'transition-overlay--visible' : ''}`}>

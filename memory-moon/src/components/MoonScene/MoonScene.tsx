@@ -1,9 +1,45 @@
-import React, { Suspense, useRef, useMemo } from 'react';
+import React, { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { MeshDistortMaterial, Stars, OrbitControls, Billboard, useTexture } from '@react-three/drei';
+import { MeshDistortMaterial, Stars, OrbitControls, Billboard, useTexture, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import './MoonScene.css';
 import { useStore } from '../../store/useStore';
+import { CAMERA, STAR, SCENE, DUR, lerp, easeOutCubic, isReducedMotion } from '../../motion';
+import { sortMemoriesByDate } from '../../utils/memories';
+
+// Build the radial-gradient glow sprite once and share it across every star
+// (was created per-instance — N memories meant N canvas/texture allocations).
+const createGlowTexture = (): THREE.CanvasTexture => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d')!;
+  const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  gradient.addColorStop(0.2, 'rgba(255, 215, 0, 0.8)');
+  gradient.addColorStop(0.5, 'rgba(255, 215, 0, 0.3)');
+  gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(canvas);
+};
+
+const ORIGIN = new THREE.Vector3(0, 0, 0);
+
+// Star layout — shared so the stars, the camera, and the constellation agree.
+const getStarPosition = (index: number, total: number): [number, number, number] => {
+  const progress = total === 1 ? 0.5 : index / (total - 1);
+  const angle = progress * Math.PI * 2 - Math.PI / 2;
+  const radius = 2.4 + Math.sin(progress * Math.PI) * 0.4;
+  const y = (progress - 0.5) * 1.6;
+  const xOffset = Math.sin(angle * 2) * 0.3;
+  const zOffset = Math.cos(angle * 3) * 0.2;
+  return [
+    Math.cos(angle) * radius + xOffset,
+    y + zOffset,
+    Math.sin(angle) * radius + xOffset,
+  ];
+};
 
 // Shader patch to blend seams for non-seamless textures
 const useSeamPatch = () => {
@@ -129,31 +165,18 @@ const OrbitRing2: React.FC = () => {
 
 // Star dots around moon - each memory has a corresponding star
 const MemoryStars: React.FC<{ onStarClick?: (id: string) => void }> = ({ onStarClick }) => {
-  const { memories, selectedMemoryId, selectMemory } = useStore();
+  const { memories, selectedMemoryId, selectMemory, setFocusedMemory } = useStore();
+
+  // One shared glow sprite for all stars.
+  const glowTexture = useMemo(() => createGlowTexture(), []);
 
   const handleClick = (id: string) => {
     selectMemory(id);
+    setFocusedMemory(id);
     onStarClick?.(id);
   };
 
-  const sortedMemories = [...memories].sort((a, b) =>
-    new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
-
-  const getStarPosition = (index: number, total: number): [number, number, number] => {
-    const progress = total === 1 ? 0.5 : index / (total - 1);
-    const angle = progress * Math.PI * 2 - Math.PI / 2;
-    const radius = 2.4 + Math.sin(progress * Math.PI) * 0.4;
-    const y = (progress - 0.5) * 1.6;
-    const xOffset = Math.sin(angle * 2) * 0.3;
-    const zOffset = Math.cos(angle * 3) * 0.2;
-
-    return [
-      Math.cos(angle) * radius + xOffset,
-      y + zOffset,
-      Math.sin(angle) * radius + xOffset
-    ];
-  };
+  const sortedMemories = sortMemoriesByDate(memories);
 
   const countWords = (text: string) => {
     return text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -173,6 +196,7 @@ const MemoryStars: React.FC<{ onStarClick?: (id: string) => void }> = ({ onStarC
             onClick={() => handleClick(memory.id)}
             photoCount={memory.photos?.length || 0}
             descriptionLength={countWords(memory.description || '')}
+            glowTexture={glowTexture}
           />
         );
       })}
@@ -186,44 +210,39 @@ const MemoryStar: React.FC<{
   onClick: () => void;
   photoCount: number;
   descriptionLength: number;
-}> = ({ position, isSelected, onClick, photoCount, descriptionLength }) => {
+  glowTexture: THREE.Texture;
+}> = ({ position, isSelected, onClick, photoCount, descriptionLength, glowTexture }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = React.useState(false);
+  // Eased "unit" scale (lerps toward target so selection grows in cinematically).
+  const unitScaleRef = useRef(1);
 
   const maxPhotos = 5;
   const maxDescWords = 200;
   const photoScale = 1 + Math.min(photoCount, maxPhotos) * 0.1;
   const descScale = 1 + Math.min(descriptionLength, maxDescWords) * 0.003;
 
-  const glowTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = 64;
-    const ctx = canvas.getContext('2d')!;
-    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-    gradient.addColorStop(0.2, 'rgba(255, 215, 0, 0.8)');
-    gradient.addColorStop(0.5, 'rgba(255, 215, 0, 0.3)');
-    gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 64, 64);
-    return new THREE.CanvasTexture(canvas);
-  }, []);
-
   useFrame(({ clock }) => {
+    const reduce = isReducedMotion();
     const t = clock.getElapsedTime();
-    const baseScale = isSelected ? 1.5 : 1;
-    const hoverScale = hovered ? 1.3 : 1;
-    const pulse = Math.sin(t * 2) * 0.1 + 1;
-    const scale = baseScale * hoverScale * photoScale * descScale * (isSelected ? pulse : 1);
+    const baseScale = isSelected ? STAR.selectedScale : 1;
+    const hoverScale = hovered ? STAR.hoverScale : 1;
+    const pulse = reduce ? 1 : Math.sin(t * STAR.pulseSpeed) * 0.1 + 1;
+    const target = baseScale * hoverScale * photoScale * descScale * (isSelected ? pulse : 1);
+
+    // Ease toward the target instead of snapping.
+    unitScaleRef.current = reduce ? target : lerp(unitScaleRef.current, target, STAR.lerpFactor);
+    const u = unitScaleRef.current;
 
     if (meshRef.current) {
-      meshRef.current.scale.setScalar(scale * 0.04);
+      meshRef.current.scale.setScalar(u * STAR.baseRadius);
     }
     if (glowRef.current) {
-      glowRef.current.scale.setScalar(scale * 0.25);
-      (glowRef.current.material as THREE.MeshBasicMaterial).opacity = isSelected ? 0.8 : 0.4;
+      glowRef.current.scale.setScalar(u * STAR.glowRadius);
+      const mat = glowRef.current.material as THREE.MeshBasicMaterial;
+      const targetOpacity = isSelected ? 0.8 : 0.4;
+      mat.opacity = reduce ? targetOpacity : lerp(mat.opacity, targetOpacity, STAR.lerpFactor);
     }
   });
 
@@ -259,6 +278,35 @@ const MemoryStar: React.FC<{
   );
 };
 
+// A faint thread linking the memory stars in chronological order — this pet's
+// "constellation". Lives inside the rotating group so it moves/freezes with the stars.
+const MemoryConstellation: React.FC = () => {
+  const memories = useStore(s => s.memories);
+  const points = useMemo(() => {
+    const sorted = sortMemoriesByDate(memories);
+    if (sorted.length < 2) return [];
+    const ctrl = sorted.map((_, i) => new THREE.Vector3(...getStarPosition(i, sorted.length)));
+    // Flow a smooth spline through the stars so the thread reads as a soft
+    // curve like the orbit rings (not an angular polyline). 'centripetal'
+    // avoids overshoot/cusps when the stars are unevenly spaced.
+    const curve = new THREE.CatmullRomCurve3(ctrl, false, 'centripetal');
+    return curve.getPoints(Math.max(ctrl.length * 16, 64));
+  }, [memories]);
+
+  if (points.length < 2) return null;
+
+  return (
+    <Line
+      points={points}
+      color="#ffe6a0"
+      lineWidth={1.4}
+      transparent
+      opacity={0.55}
+      depthWrite={false}
+    />
+  );
+};
+
 interface PlanetProps {
   size: number;
   color: string;
@@ -277,13 +325,15 @@ const Planet: React.FC<PlanetProps> = ({ size, color, orbitRadius, orbitSpeed, o
   const texture = useTexture('/assets/images/planet_blue.png');
 
   useFrame(({ clock }) => {
+    const reduce = isReducedMotion();
     if (groupRef.current) {
-      const t = clock.getElapsedTime() * orbitSpeed;
+      // Freeze at a distinct per-planet angle when reduced motion is requested.
+      const t = reduce ? orbitTilt * 4 : clock.getElapsedTime() * orbitSpeed;
       groupRef.current.position.x = Math.cos(t) * orbitRadius;
       groupRef.current.position.z = Math.sin(t) * orbitRadius;
       groupRef.current.position.y = Math.sin(t * 0.5 + orbitTilt) * orbitRadius * 0.3;
     }
-    if (meshRef.current) {
+    if (meshRef.current && !reduce) {
       meshRef.current.rotation.y += 0.001;
     }
   });
@@ -344,13 +394,22 @@ const SolarSystem: React.FC = () => {
   );
 };
 
-const MoonSystem: React.FC<{ onStarClick?: (id: string) => void }> = ({ onStarClick }) => {
-  const groupRef = useRef<THREE.Group>(null);
-
-  useFrame(({ clock }) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = clock.getElapsedTime() * 0.015;
-    }
+const MoonSystem: React.FC<{
+  onStarClick?: (id: string) => void;
+  groupRef: React.RefObject<THREE.Group | null>;
+  frozenRef: React.MutableRefObject<boolean>;
+}> = ({ onStarClick, groupRef, frozenRef }) => {
+  useFrame(({ pointer }, delta) => {
+    const g = groupRef.current;
+    if (!g || frozenRef.current) return; // held still while a star is focused
+    const reduce = isReducedMotion();
+    // Ambient auto-rotation — delta-based so pausing/resuming doesn't jump.
+    if (!reduce) g.rotation.y += delta * SCENE.groupRotateSpeed;
+    // Subtle pointer parallax so the scene gently breathes toward the cursor.
+    const targetX = reduce ? 0 : pointer.y * SCENE.parallaxAmount;
+    const targetZ = reduce ? 0 : -pointer.x * SCENE.parallaxAmount;
+    g.rotation.x = lerp(g.rotation.x, targetX, SCENE.parallaxLerp);
+    g.rotation.z = lerp(g.rotation.z, targetZ, SCENE.parallaxLerp);
   });
 
   return (
@@ -358,18 +417,140 @@ const MoonSystem: React.FC<{ onStarClick?: (id: string) => void }> = ({ onStarCl
       <MoonMesh />
       <OrbitRing />
       <OrbitRing2 />
+      <MemoryConstellation />
       <MemoryStars onStarClick={onStarClick} />
       <SolarSystem />
     </group>
   );
 };
 
+// Drives the camera through three jobs: the opening dolly, flying in to frame a
+// focused memory star (the scene's rotation is held still so the target doesn't
+// drift), and flying back to wherever the user was. OrbitControls is disabled
+// during the dolly/focus and handed back cleanly afterwards.
+const CameraController: React.FC<{
+  playIntro: boolean;
+  restZ: number;
+  controlsRef: React.RefObject<any>;
+  groupRef: React.RefObject<THREE.Group | null>;
+  frozenRef: React.MutableRefObject<boolean>;
+  focusIndex: number;
+  focusTotal: number;
+}> = ({ playIntro, restZ, controlsRef, groupRef, frozenRef, focusIndex, focusTotal }) => {
+  const phase = useRef<'intro' | 'idle' | 'focus' | 'return'>('intro');
+  const introElapsed = useRef(0);
+  const introStarted = useRef(false);
+  const savedPos = useRef(new THREE.Vector3());
+  const look = useRef(new THREE.Vector3(0, 0, 0));
+  const scratch = useRef(new THREE.Vector3());
+  const dir = useRef(new THREE.Vector3());
+
+  useFrame(({ camera }, delta) => {
+    const controls = controlsRef.current;
+    const wantFocus = focusIndex >= 0 && !!groupRef.current;
+
+    // ── Opening dolly ──
+    if (phase.current === 'intro') {
+      if (controls) controls.enabled = false;
+      if (playIntro) {
+        camera.position.set(0, 0, CAMERA.introZ);
+        camera.lookAt(ORIGIN);
+        return;
+      }
+      if (isReducedMotion()) {
+        camera.position.set(0, 0, restZ);
+        camera.lookAt(ORIGIN);
+        phase.current = 'idle';
+        return;
+      }
+      if (!introStarted.current) { introStarted.current = true; introElapsed.current = 0; }
+      introElapsed.current += delta;
+      const t = Math.min(introElapsed.current / DUR.cinematic, 1);
+      camera.position.z = CAMERA.introZ + (restZ - CAMERA.introZ) * easeOutCubic(t);
+      camera.lookAt(ORIGIN);
+      if (t >= 1) phase.current = 'idle';
+      return;
+    }
+
+    // ── Idle: OrbitControls owns the camera ──
+    if (phase.current === 'idle') {
+      if (controls) controls.enabled = true;
+      frozenRef.current = false;
+      if (wantFocus) {
+        savedPos.current.copy(camera.position);
+        look.current.copy(controls ? controls.target : ORIGIN);
+        frozenRef.current = true;
+        if (controls) controls.enabled = false;
+        phase.current = 'focus';
+      }
+      return;
+    }
+
+    // ── Flying to / holding on the focused star ──
+    if (phase.current === 'focus') {
+      if (controls) controls.enabled = false;
+      frozenRef.current = true;
+      if (!wantFocus) { phase.current = 'return'; return; }
+      const local = getStarPosition(focusIndex, focusTotal);
+      const world = scratch.current.set(local[0], local[1], local[2]).applyEuler(groupRef.current!.rotation);
+      look.current.lerp(world, STAR.focusLerp);
+      // Desired camera position: stand off from the star along the outward radial.
+      dir.current.copy(world).normalize().multiplyScalar(STAR.focusGap).add(world);
+      camera.position.lerp(dir.current, STAR.focusLerp);
+      camera.lookAt(look.current);
+      return;
+    }
+
+    // ── Returning to where the user was ──
+    if (phase.current === 'return') {
+      if (controls) controls.enabled = false;
+      if (wantFocus) { phase.current = 'focus'; return; }
+      camera.position.lerp(savedPos.current, STAR.focusLerp);
+      look.current.lerp(ORIGIN, STAR.focusLerp);
+      camera.lookAt(look.current);
+      if (camera.position.distanceTo(savedPos.current) < 0.03) {
+        camera.position.copy(savedPos.current);
+        if (controls) { controls.target.set(0, 0, 0); controls.update(); controls.enabled = true; }
+        frozenRef.current = false;
+        phase.current = 'idle';
+      }
+      return;
+    }
+  });
+
+  return null;
+};
+
 interface MoonSceneProps {
   onStarClick?: (id: string) => void;
+  /** True while the opening logo overlay is showing; gates the camera dolly. */
+  playIntro?: boolean;
 }
 
-const MoonScene: React.FC<MoonSceneProps> = ({ onStarClick }) => {
-  const { theme, selectMemory } = useStore();
+const MoonScene: React.FC<MoonSceneProps> = ({ onStarClick, playIntro = false }) => {
+  const { theme, selectMemory, setFocusedMemory, memories, focusedMemoryId } = useStore();
+  const isMemorial = useStore(s => !!s.pet.passDate);
+
+  // Reactive breakpoint so camera framing + zoom limits follow window size
+  // (was frozen at first render — the "phone mode" distance never updated).
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 960);
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 960);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const groupRef = useRef<THREE.Group>(null);
+  const controlsRef = useRef<any>(null);
+  const frozenRef = useRef(false);
+
+  const targetZ = isMobile ? CAMERA.zMobile : CAMERA.zDesktop;
+  const minDistance = isMobile ? 4 : 3;
+
+  // Which star (if any) the camera should fly to — same sort order as the stars.
+  const sortedForFocus = sortMemoriesByDate(memories);
+  const focusTotal = sortedForFocus.length;
+  const focusIndex = focusedMemoryId ? sortedForFocus.findIndex(m => m.id === focusedMemoryId) : -1;
 
   const themeConfig = useMemo(() => {
     switch (theme) {
@@ -403,24 +584,32 @@ const MoonScene: React.FC<MoonSceneProps> = ({ onStarClick }) => {
     }
   }, [theme]);
 
-  const cameraZ = useMemo(() => {
-    return window.innerWidth <= 960 ? 10.0 : 6;
-  }, []);
-
   return (
-    <div className={`moon-scene ${themeConfig.bgClass}`}>
+    <div className={`moon-scene ${themeConfig.bgClass} ${isMemorial ? 'moon-scene--memorial' : ''}`}>
       <Canvas
-        camera={{ position: [0, 0, cameraZ], fov: 50 }}
+        camera={{ position: [0, 0, CAMERA.introZ], fov: CAMERA.fov }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent' }}
-        onPointerMissed={() => selectMemory(null)}
+        onPointerMissed={() => { selectMemory(null); setFocusedMemory(null); }}
       >
+        {/* Atmospheric depth — distant planets fade into the background colour. */}
+        <fogExp2 attach="fog" args={[isMemorial ? '#150f28' : SCENE.fogColor, SCENE.fogDensity]} />
         <ambientLight intensity={themeConfig.ambient} />
         <directionalLight position={[5, 3, 5]} intensity={themeConfig.dirIntensity} color={themeConfig.dirColor} />
         <pointLight position={[-4, -2, 3]} intensity={themeConfig.pointIntensity} color={themeConfig.pointColor} />
 
+        <CameraController
+          playIntro={playIntro}
+          restZ={targetZ}
+          controlsRef={controlsRef}
+          groupRef={groupRef}
+          frozenRef={frozenRef}
+          focusIndex={focusIndex}
+          focusTotal={focusTotal}
+        />
+
         <Suspense fallback={null}>
-          <MoonSystem onStarClick={onStarClick} />
+          <MoonSystem onStarClick={onStarClick} groupRef={groupRef} frozenRef={frozenRef} />
           <Stars
             radius={30}
             depth={20}
@@ -431,12 +620,13 @@ const MoonScene: React.FC<MoonSceneProps> = ({ onStarClick }) => {
             speed={theme === 'night' ? 0.3 : 0.15}
           />
           <OrbitControls
+            ref={controlsRef}
             enablePan={false}
             enableZoom={true}
             enableRotate={true}
             enableDamping={true}
             dampingFactor={0.05}
-            minDistance={window.innerWidth <= 960 ? 4 : 3}
+            minDistance={minDistance}
             maxDistance={12}
             minPolarAngle={0}
             maxPolarAngle={Math.PI}
@@ -447,6 +637,9 @@ const MoonScene: React.FC<MoonSceneProps> = ({ onStarClick }) => {
           />
         </Suspense>
       </Canvas>
+
+      {/* Memorial "rainbow bridge" aura */}
+      {isMemorial && <div className="memorial-aura" />}
 
       {/* Flying birds SVG overlay */}
       <div className="birds-overlay">

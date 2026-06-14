@@ -1,0 +1,5 @@
+# IDE / editor
+.idea/
+
+# Claude Code local tooling (preview launch config, etc.)
+.claude/

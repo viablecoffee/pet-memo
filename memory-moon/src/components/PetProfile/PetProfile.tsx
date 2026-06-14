@@ -1,8 +1,11 @@
 ﻿import React, { useState, useRef, useEffect } from 'react';
 import './PetProfile.css';
 import { useStore } from '../../store/useStore';
-import type { Pet } from '../../types';
+import type { Pet, Letter } from '../../types';
 import AvatarBuilder from '../AvatarBuilder/AvatarBuilder';
+import LetterComposer from '../Letters/LetterComposer';
+import LetterReader from '../Letters/LetterReader';
+import { todayYMD } from '../../utils/anniversary';
 
 const TagInput = ({ value, onChange, placeholder }: { value: string; onChange: (val: string) => void; placeholder: string }) => {
   const [inputValue, setInputValue] = useState('');
@@ -63,8 +66,13 @@ const PetProfile: React.FC = () => {
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
 
   const [isAvatarBuilderOpen, setIsAvatarBuilderOpen] = useState(false);
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [readingLetter, setReadingLetter] = useState<Letter | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
+
+  const letters = pet.letters ?? [];
+  const today = todayYMD();
 
   // Calculate total items for navigation boundaries
   const totalItems = memories.length;
@@ -241,7 +249,7 @@ const PetProfile: React.FC = () => {
     return (
       <div className="pet-profile" onClick={() => setIsGenderOpen(false)}>
         <div className="pet-profile-frame" onClick={(e) => e.stopPropagation()}>
-          <main className="pet-profile-main">
+          <main className="pet-profile-main" key="edit-main">
             <section className="pet-identity">
               <div className="pet-avatar-wrapper pet-avatar-wrapper--editing" onClick={() => fileInputRef.current?.click()}>
                 <div className="pet-avatar-glow"></div>
@@ -314,6 +322,14 @@ const PetProfile: React.FC = () => {
                     type="date"
                     value={editForm.birthDate || ''}
                     onChange={(e) => setEditForm({ ...editForm, birthDate: e.target.value })}
+                  />
+                </div>
+                <div className="edit-form-item">
+                  <label>Passed away <span className="edit-label-hint">(optional)</span></label>
+                  <input
+                    type="date"
+                    value={editForm.passDate || ''}
+                    onChange={(e) => setEditForm({ ...editForm, passDate: e.target.value })}
                   />
                 </div>
                 <div className="edit-form-item">
@@ -391,7 +407,7 @@ const PetProfile: React.FC = () => {
   return (
     <div className="pet-profile">
       <div className="pet-profile-frame">
-        <main className="pet-profile-main">
+        <main className="pet-profile-main" key="view-main">
           <section className="pet-identity">
             <div className="pet-avatar-wrapper">
               <div className="pet-avatar-glow"></div>
@@ -403,6 +419,9 @@ const PetProfile: React.FC = () => {
             </div>
             <h2 className="pet-name">{pet.name} 🐾</h2>
             <p className="pet-breed">{pet.breed || 'Pet'}</p>
+            {pet.passDate && (
+              <p className="pet-memorial-ribbon">🕊 In loving memory · {formatDate(pet.birthDate)} – {formatDate(pet.passDate)}</p>
+            )}
             <div className="pet-actions" style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px' }}>
               <button className="pet-edit-btn" onClick={() => { setEditForm(pet); setIsEditing(true); }}>
                 ✏️ Edit Profile
@@ -483,7 +502,10 @@ const PetProfile: React.FC = () => {
                 <button
                   className="gallery-nav gallery-nav--prev"
                   onClick={(e) => { e.stopPropagation(); handleNavClick('prev'); }}
-                >←</button>
+                  aria-label="Previous memory"
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                </button>
               )}
 
               <div className="gallery-viewport" ref={galleryRef}>
@@ -491,7 +513,7 @@ const PetProfile: React.FC = () => {
                   className="gallery-strip"
                   style={{
                     transform: `translateX(calc(-${galleryIndex * 33.333}% + ${dragOffset}px))`,
-                    transition: isDragging || transitionDuration === 0 ? 'none' : `transform ${transitionDuration}s cubic-bezier(0.16, 1, 0.3, 1)`
+                    transition: isDragging || transitionDuration === 0 ? 'none' : `transform ${transitionDuration}s var(--ease-entrance)`
                   }}
                 >
                   {displayMemories.length > 0 ? displayMemories.map((memory, index) => {
@@ -526,7 +548,9 @@ const PetProfile: React.FC = () => {
                     );
                   }) : (
                     <div className="memories-empty-state">
-                      <p>No memories yet. Add your first memory from the Memory Space!</p>
+                      <span className="memories-empty-icon">🌙</span>
+                      <p>No memories yet</p>
+                      <span className="memories-empty-hint">Add your first memory from the Memory Space</span>
                     </div>
                   )}
                 </div>
@@ -536,10 +560,41 @@ const PetProfile: React.FC = () => {
                 <button
                   className="gallery-nav gallery-nav--next"
                   onClick={(e) => { e.stopPropagation(); handleNavClick('next'); }}
-                >→</button>
+                  aria-label="Next memory"
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                </button>
               )}
             </div>
 
+          </section>
+
+          <section className="letters-section">
+            <div className="letters-header">
+              <h3 className="section-title">✉️ 给它的信</h3>
+              <button className="letter-compose-btn" onClick={() => setComposerOpen(true)}>写一封信</button>
+            </div>
+            {letters.length === 0 ? (
+              <p className="letters-empty">还没有写过信。写一封，封存到未来的某一天。</p>
+            ) : (
+              <div className="letters-list">
+                {letters.map(l => {
+                  const locked = !l.opened && l.openDate > today;
+                  return (
+                    <button
+                      key={l.id}
+                      className={`letter-item ${locked ? 'letter-item--locked' : ''} ${(!l.opened && !locked) ? 'letter-item--ready' : ''}`}
+                      disabled={locked}
+                      onClick={() => { if (!locked) setReadingLetter(l); }}
+                    >
+                      <span className="letter-item-icon">{locked ? '🔒' : l.opened ? '✉️' : '✨'}</span>
+                      <span className="letter-item-title">{l.title || '一封信'}</span>
+                      <span className="letter-item-date">{locked ? `${l.openDate} 开启` : l.opened ? '已开启' : '可开启'}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </section>
         </main>
       </div>
@@ -548,6 +603,9 @@ const PetProfile: React.FC = () => {
           <img src={enlargedImage} alt="Enlarged" />
         </div>
       )}
+
+      <LetterComposer isOpen={composerOpen} onClose={() => setComposerOpen(false)} />
+      <LetterReader isOpen={!!readingLetter} letter={readingLetter} onClose={() => setReadingLetter(null)} />
     </div>
   );
 };
